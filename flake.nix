@@ -21,6 +21,7 @@
         default = pkgs.mkShell {
           packages = [
             pkgs.pmbootstrap
+            pkgs.bash
           ];
           shellHook = ''
             echo "In dev shell!"

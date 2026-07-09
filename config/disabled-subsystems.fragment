@@ -1,0 +1,8 @@
+# subsystems to DISABLE.
+
+# Wireless / bluetooth 
+# CONFIG_BT is not set
+# CONFIG_WIRELESS is not set
+
+# Sound
+# CONFIG_SOUND is not set

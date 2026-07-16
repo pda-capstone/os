@@ -33,4 +33,5 @@ pmbootstrap config work $HOME/.local/var/pmbootstrap
 
 echo '[CONFIG DONE]'
 
-cp -r ./pmaports/device/downstream/device-pda-hackberry $HOME/.local/var/pmbootstrap/cache_git/pmaports/device/downstream/device-pda-hackberry
+mkdir -p $HOME/.local/var/pmbootstrap/cache_git/pmaports/device/testing
+cp -r ./pmaports/device/testing/device-pda-hackberry $HOME/.local/var/pmbootstrap/cache_git/pmaports/device/testing/device-pda-hackberry

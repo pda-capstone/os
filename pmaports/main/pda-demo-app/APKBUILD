@@ -1,0 +1,46 @@
+# Maintainer: Tanner Weber <tannerw@pdx.edu>
+pkgname=pda-demo-app
+pkgver=0.1.0
+pkgrel=0
+pkgdesc="Demo app for Pocket Distro Alpha"
+url="https://github.com/pda-capstone"
+arch="aarch64 x86_64"
+# license="MIT"
+depends="py3-gobject3 gtk4.0 py3-cairo"
+depends_dev=""
+makedepends="py3-gpep517 py3-setuptools py3-wheel python3-dev"
+# checkdepends="py3-pytest"
+source="$pkgname-$pkgver.tar.gz::https://github.com/pda-capstone/ui/archive/refs/tags/v$pkgver.tar.gz"
+builddir="$srcdir"/ui-$pkgver/$pkgname
+
+build() {
+	gpep517 build-wheel \
+		--wheel-dir .dist \
+		--output-fd 3 3>&1
+}
+
+# check() {
+# 	python3 -m venv --clear --system-site-packages testenv
+# 	testenv/bin/python3 -m installer .dist/*.whl
+# 	testenv/bin/python3 -m pytest
+# }
+
+package() {
+	python3 -m installer -d "$pkgdir" \
+		.dist/*.whl
+	install -Dm0644 -t "$pkgdir"/usr/share/applications/ \
+		data/applications/pda_demo_app.desktop
+	install -Dm0644 -t "$pkgdir"/usr/share/icons/hicolor/32x32/apps/ \
+		data/icons/hicolor/32x32/apps/$pkgname.png
+	install -Dm0644 -t "$pkgdir"/usr/share/icons/hicolor/48x48/apps/ \
+		data/icons/hicolor/48x48/apps/$pkgname.png
+	install -Dm0644 -t "$pkgdir"/usr/share/icons/hicolor/256x256/apps/ \
+		data/icons/hicolor/256x256/apps/$pkgname.png
+	install -Dm0644 -t "$pkgdir"/usr/share/icons/hicolor/512x512/apps/ \
+		data/icons/hicolor/512x512/apps/$pkgname.png
+}
+
+sha512sums="
+f7d1948aa5e244fcedb422a77e3aeb839ab4d4465a6b446df19b4f3c5f71a9255a0c1a5215b9337f4575bfb0f11e1042f7d2002836db721f7a95f837afc6ebd5  pda-demo-app-0.1.0.tar.gz
+"
+

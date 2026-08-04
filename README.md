@@ -35,6 +35,13 @@ cd os
 
 2. Perform setup and configuration
 
+When asked to configure pmbootstrap, select defaults for the cache directories
+(Just hit enter).
+Select `edge` for the branch.
+Select `raspberry` for vendor and `pi5` for device.
+Select `y` when given the downstream warning.
+Otherwise, just hit enter to use defaults.
+
 ```bash
 nix develop
 make clean # This will fail on first time setup
@@ -55,3 +62,18 @@ replace X with the number identified by `lsblk`
 ```bash
 pmbootstrap install --sdcard=/dev/sdX
 ```
+
+# Troubleshooting
+
+* Run `make clean` then `make` to delete existing files and reinitialize
+* Consult the PostmarketOS wiki: https://wiki.postmarketos.org/wiki/Pmbootstrap
+
+# Maintenance
+
+pmaports and pmbootstrap should both be updated to remain compatible.
+pmbootstrap can be updated with `nix flake update`.
+Use `make clean` then `make` to update the pmaports cache locally, no need to
+change anything else in this repo because the most recent will be cloned on
+setup.
+
+If new custom packages are added, the Makefile should be updated.

@@ -6,6 +6,11 @@ DEVICE_PATH := device/downstream/device-$(DEVICE)
 DEVICE_PATH_LOCAL := pmaports/$(DEVICE_PATH)
 DEVICE_PATH_GIT := $(PMAPORTS_PATH)/$(DEVICE_PATH)
 
+KERNEL := rpi
+KERNEL_PATH := device/downstream/linux-$(KERNEL)
+KERNEL_PATH_LOCAL := pmaports/$(KERNEL_PATH)
+KERNEL_PATH_GIT := $(PMAPORTS_PATH)/$(KERNEL_PATH)
+
 DEMO_APP_PATH := main/pda-demo-app
 DEMO_APP_PATH_LOCAL := pmaports/$(DEMO_APP_PATH)
 DEMO_APP_PATH_GIT := $(PMAPORTS_PATH)/$(DEMO_APP_PATH)
@@ -25,6 +30,10 @@ setup:
 	@echo 'DEVICE_PATH' $(DEVICE_PATH)
 	@echo 'DEVICE_PATH_LOCAL' $(DEVICE_PATH_LOCAL)
 	@echo 'DEVICE_PATH_GIT' $(DEVICE_PATH_GIT)
+	@echo
+	@echo 'KERNEL_PATH' $(KERNEL_PATH)
+	@echo 'KERNEL_PATH_LOCAL' $(KERNEL_PATH_LOCAL)
+	@echo 'KERNEL_PATH_GIT' $(KERNEL_PATH_GIT)
 	@echo
 	@echo 'DEMO_APP_PATH' $(DEMO_APP_PATH)
 	@echo 'DEMO_APP_PATH_LOCAL' $(DEMO_APP_PATH_LOCAL)
@@ -79,6 +88,9 @@ setup:
 	@echo
 	rm -rf $(DAEMON_PATH_GIT)
 	cp -r $(DAEMON_PATH_LOCAL) $(DAEMON_PATH_GIT)
+	@echo
+	rm -rf $(KERNEL_PATH_GIT)
+	cp -r $(KERNEL_PATH_LOCAL) $(KERNEL_PATH_GIT)
 
 clean:
 	-pmbootstrap zap

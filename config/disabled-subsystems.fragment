@@ -1,0 +1,42 @@
+# subsystems to DISABLE.
+
+# Wireless (802.11) — DELIBERATELY RE-ENABLED 2026-08-03
+#
+# Wi-Fi is now ON by choice: the device needs wireless networking. This weakens
+# the hardening posture (the 802.11 stack is a large, network-facing attack
+# surface) and is a deliberate trade-off, not an oversight.
+#
+# To turn Wi-Fi back OFF, change the four "##" markers below back to "#".
+# The directives are disabled rather than deleted so the hard-won knowledge here
+# is not lost — parse_disabled_symbols() in scripts/lib.sh only recognises lines
+# starting exactly "# CONFIG_", so "##" makes it skip them.
+#
+# KEEP THIS NOTE: disabling CONFIG_WIRELESS alone is NOT enough. The Wi-Fi
+# *drivers* under CONFIG_WLAN (b43, ath9k, ...) `select CFG80211`, and
+# `make olddefconfig` then forces the wireless stack back ON. You must also
+# disable the driver umbrella (WLAN) and the stack symbols (CFG80211/MAC80211)
+# that get re-selected. With the drivers gone, nothing selects the stack and the
+# disables finally stick. This cost a full rebuild to discover.
+##  CONFIG_WIRELESS is not set
+##  CONFIG_WLAN is not set
+##  CONFIG_CFG80211 is not set
+##  CONFIG_MAC80211 is not set
+
+# Bluetooth
+# CONFIG_BT is not set
+
+# Sound
+# CONFIG_SOUND is not set
+
+# Module symbol versioning (MODVERSIONS)
+# Not a subsystem — a build-cost and surface reduction. With MODVERSIONS on, the
+# kernel build preprocesses every module source a SECOND time
+# ("gcc -E -D__GENKSYMS__ ... | genksyms") purely to compute symbol-version CRCs.
+# Observed live: every sampled cc1 during a build was one of these passes.
+#
+# Its only purpose is letting out-of-tree modules be version-checked against this
+# kernel — and we dropped the linux-rpi-dev subpackage, so out-of-tree modules
+# can't be built against it anyway. We pay the cost for a capability the design
+# already forgoes. Expect roughly 15-25% off the kernel build (an -E pass is
+# cheaper than a full compile, so this is not a halving).
+# CONFIG_MODVERSIONS is not set

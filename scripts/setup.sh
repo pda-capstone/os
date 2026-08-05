@@ -6,8 +6,6 @@
 # Linux machine before the first build. It:
 #   1. installs host dependencies via your distro's package manager
 #   2. clones pmbootstrap at the pinned version and links it onto your PATH
-#
-# Re-running is safe (idempotent).
 set -eu
 
 LOG_TAG="setup"
@@ -29,9 +27,12 @@ install_deps() {
     if command -v apt-get >/dev/null 2>&1; then
         log "Installing dependencies with apt"
         sudo apt-get update
+        # python3-tomli: pmbootstrap parses TOML with the stdlib tomllib, which
+        # only exists in Python 3.11+. On Ubuntu 22.04 (Python 3.10) it falls
+        # back to the tomli package, so install it. Harmless on 24.04+.
         sudo apt-get install -y --no-install-recommends \
-            git python3 kpartx procps util-linux e2fsprogs dosfstools \
-            parted xz-utils qemu-user-static binfmt-support
+            git python3 python3-tomli kpartx procps util-linux e2fsprogs \
+            dosfstools parted xz-utils qemu-user-static binfmt-support
     elif command -v dnf >/dev/null 2>&1; then
         log "Installing dependencies with dnf"
         sudo dnf install -y \
@@ -54,6 +55,21 @@ install_deps() {
     fi
 }
 install_deps
+
+# --- 1b. Verify the fast-route binfmt (F flag) ------------------------------
+# When building for aarch64 on a non-aarch64 host, crossdirect needs the
+# qemu-aarch64 binfmt entry registered with the F (fix-binary) flag.
+# qemu-user-static should have set this up above; warn (don't fail) if not, so
+# the first build doesn't silently fall back to slow emulation.
+if [ "${ARCH:-}" = "aarch64" ] && [ "$(uname -m)" != "aarch64" ]; then
+    if binfmt_has_f /proc/sys/fs/binfmt_misc/qemu-aarch64; then
+        log "qemu-aarch64 binfmt has the F flag — crossdirect will run native."
+    else
+        log "WARNING: qemu-aarch64 binfmt is missing or lacks the F flag."
+        log "         Builds may fall back to slow full emulation."
+        log "         Fix with:  sudo sh $script_dir/fix-binfmt.sh"
+    fi
+fi
 
 # --- 2. pmbootstrap ---------------------------------------------------------
 pmb_dir="$HOME/.local/opt/pmbootstrap"

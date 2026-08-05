@@ -1,15 +1,6 @@
 #!/bin/sh
 #
-# apply-fragment.sh — inject our "disable" directives into the linux-rpi recipe.
-#
-# The CM5 kernel (linux-rpi) is built from an Alpine recipe that generates its
-# config from a defconfig plus a list of changes in "common-changes.config".
-# That file uses "CONFIG_X=n" to disable an option (lines starting with "#" are
-# ignored). So for every symbol in our fragment we append a "CONFIG_X=n" line.
-#
-# We write those lines inside a clearly marked block so re-running is safe: the
-# old block is removed first, then a fresh one is appended.
-#
+# apply-fragment.sh — inject our "disable" directives into the linux-rpi recipe
 # Usage:
 #   apply-fragment.sh <common-changes.config> <fragment_file>
 

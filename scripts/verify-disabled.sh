@@ -103,11 +103,48 @@ if [ -n "$work_dir" ] && [ -d "$work_dir" ]; then
         -type f 2>/dev/null | head -n 1 || true)
 fi
 
+# --- Layer 2b: fall back to the config shipped inside the built .apk --------
+# The build tree above is transient: abuild cleans it after packaging, and
+# `pmbootstrap zap` deletes the whole chroot. So layer 2 usually finds nothing
+# even right after a successful build, which is how this script came to report
+# PASS on recipe input alone. The kernel package ships /boot/config-<ver>, which
+# is the same data and persists in $work/packages/. Prefer it over giving up.
+if [ -z "$built_config" ] && [ -n "$work_dir" ] && [ -d "$work_dir/packages" ]; then
+    apk_file=$(find "$work_dir/packages" -name "$KERNEL_PKG-*.apk" 2>/dev/null \
+        | sort | tail -n 1)
+    if [ -n "$apk_file" ]; then
+        # --ignore-zeros is REQUIRED. An .apk is three concatenated gzip streams
+        # (signature, control, data), each its own tar archive. Without it, tar
+        # stops at the first end-of-archive marker and sees only the .SIGN.* file
+        # — the package looks empty and this fallback silently finds nothing.
+        #
+        # Resolve the exact member name first rather than relying on GNU tar's
+        # --wildcards for in-archive globbing.
+        member=$(tar --ignore-zeros -tzf "$apk_file" 2>/dev/null \
+            | grep -m1 '^boot/config-' || true)
+        if [ -n "$member" ]; then
+            extracted="${TMPDIR:-/tmp}/verify-disabled.$$.config"
+            if tar --ignore-zeros -xzOf "$apk_file" "$member" > "$extracted" 2>/dev/null &&
+               [ -s "$extracted" ]; then
+                built_config="$extracted"
+                log "Build tree absent; using $member from $(basename "$apk_file")"
+            else
+                rm -f "$extracted"
+                log "NOTE: found $member in $(basename "$apk_file") but could not extract it"
+            fi
+        else
+            log "NOTE: $(basename "$apk_file") contains no boot/config-* member"
+        fi
+    fi
+fi
+
+inconclusive=0
 if [ -n "$built_config" ]; then
     check_config_file "$built_config" "compiled kernel .config"
 else
+    inconclusive=1
     log "WARNING: compiled kernel .config not found — has the kernel been built?"
-    log "         (Relying on the recipe-input check above only.)"
+    log "         (It also lives inside the build chroot, so 'pmbootstrap zap' removes it.)"
 fi
 
 # --- Verdict ----------------------------------------------------------------
@@ -115,4 +152,21 @@ if [ "$failed" -ne 0 ]; then
     die "One or more subsystems are still enabled (see the FAIL lines above)."
 fi
 
-log "PASS — every listed subsystem is disabled."
+# Layer 1 alone is NOT proof. It only shows the fragment was written into the
+# recipe; it says nothing about what `make olddefconfig` did afterwards, and this
+# project has already been burned twice by that gap:
+#   - CONFIG_WIRELESS=n was in the recipe and olddefconfig re-enabled the stack
+#     anyway, because WLAN drivers `select CFG80211`.
+#   - On 2026-08-03 this script printed PASS for a kernel that was never even
+#     installed (apk had silently substituted the stock build).
+# So refuse to claim PASS when the authoritative layer could not be read.
+if [ "$inconclusive" -ne 0 ]; then
+    log "INCONCLUSIVE — the recipe asks for every symbol to be disabled, but the"
+    log "               compiled .config could not be read, so this is NOT proof."
+    log "               Verify on the running device instead:"
+    log "                 grep -E '^CONFIG_(WIRELESS|WLAN|CFG80211|MAC80211|BT|SOUND)=' /boot/config-\$(uname -r)"
+    log "                 uname -r    # must match this recipe's pkgver-pkgrel"
+    exit 2
+fi
+
+log "PASS — every listed subsystem is disabled (verified against the compiled .config)."

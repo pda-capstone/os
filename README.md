@@ -35,16 +35,9 @@ cd os
 
 2. Perform setup and configuration
 
-When asked to configure pmbootstrap, select defaults for the cache directories
-(Just hit enter).
-Select `edge` for the branch.
-Select `raspberry` for vendor and `pi5` for device.
-Select `y` when given the downstream warning.
-Otherwise, just hit enter to use defaults.
-
 ```bash
 nix develop
-make clean # This will fail on first time setup
+make clean
 make
 pmbootstrap init # Use to configure beyond the default
 ```

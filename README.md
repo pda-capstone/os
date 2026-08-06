@@ -42,18 +42,16 @@ make
 pmbootstrap init # Use to configure beyond the default
 ```
 
-3. Insert Micro SD card and identify it
+3. Insert Micro SD card and identify it. It will probably be sdb.
 
 ```bash
 lsblk
 ```
 
-4. Install
-
-replace X with the number identified by `lsblk`
+4. Install onto the card. Replace X with the letter identified by `lsblk`
 
 ```bash
-pmbootstrap install --sdcard=/dev/sdX
+make SDCARD=/dev/sdX install
 ```
 
 # Troubleshooting

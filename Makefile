@@ -28,7 +28,7 @@ EXTRA_PACKAGES := vim,pda-demo-app
 
 PMAPORTS_URL := https://gitlab.postmarketos.org/postmarketOS/pmaports.git
 
-.PHONY: all vars setup copy clean
+.PHONY: all vars setup copy install clean
 
 all: vars setup copy
 	@echo '[DONE WITH ALL]'
@@ -152,6 +152,13 @@ copy:
 	rm -rf $(KERNEL_PATH_GIT)
 	cp -r $(KERNEL_PATH_LOCAL) $(KERNEL_PATH_GIT)
 	@echo '[DONE WITH COPY]'
+
+install:
+ifndef SDCARD
+	$(error SDCARD must be set)
+endif
+	pmbootstrap install --sdcard=$(SDCARD)
+	@echo '[DONE WITH INSTALL]'
 
 clean:
 	-pmbootstrap zap

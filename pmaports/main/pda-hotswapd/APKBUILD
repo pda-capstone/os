@@ -25,7 +25,6 @@ build() {
 
 package() {
 	make DESTDIR="$pkgdir" install
-	# gzip -9 "$pkgdir/usr/share/man/man8/hotswapd.8"
 }
 
 sha512sums="

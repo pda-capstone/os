@@ -19,9 +19,13 @@ DAEMON_PATH := main/pda-hotswapd
 DAEMON_PATH_LOCAL := pmaports/$(DAEMON_PATH)
 DAEMON_PATH_GIT := $(PMAPORTS_PATH)/$(DAEMON_PATH)
 
-.PHONY: setup clean
+.PHONY: setup vars init config copy clean
 
-setup:
+setup: vars init config copy
+	@echo '[DONE WITH SETUP]'
+
+# echo our variables to verify.
+vars:
 	@echo '[Variables]'
 	@echo 'WORK_PATH' $(WORK_PATH)
 	@echo 'PMAPORTS_PATH' $(PMAPORTS_PATH)
@@ -42,13 +46,16 @@ setup:
 	@echo 'DAEMON_PATH' $(DAEMON_PATH)
 	@echo 'DAEMON_PATH_LOCAL' $(DAEMON_PATH_LOCAL)
 	@echo 'DAEMON_PATH_GIT' $(DAEMON_PATH_GIT)
-	@echo
-	@echo
+	@echo '[DONE]'
+
+# Set up pmbootstrap.
+init:
 	@echo '[Initing pmbootstrap]'
 	pmbootstrap init --shallow-initial-clone
-	@echo
-	@echo
-	# We set the config to fit our hardware.
+	@echo '[DONE]'
+
+# We set the config to fit our hardware.
+config:
 	@echo '[Setting Config]'
 	pmbootstrap config aports $(PMAPORTS_PATH)
 	pmbootstrap config auto_zap_misconfigured_chroots no
@@ -75,11 +82,12 @@ setup:
 	pmbootstrap config ui_extras False
 	pmbootstrap config user user
 	pmbootstrap config work $(WORK_PATH)
-	@echo
-	@echo
-	# Our custom files are copied into the pmaports git cache to allow
-	# pmbootstrap to see them.
-	echo '[Copying Packages]'
+	@echo '[DONE]'
+
+# Our custom files are copied into the pmaports git cache to allow
+# pmbootstrap to see them.
+copy:
+	@echo '[Copying Packages]'
 	rm -rf $(DEVICE_PATH_GIT)
 	cp -r $(DEVICE_PATH_LOCAL) $(DEVICE_PATH_GIT)
 	@echo
@@ -91,6 +99,7 @@ setup:
 	@echo
 	rm -rf $(KERNEL_PATH_GIT)
 	cp -r $(KERNEL_PATH_LOCAL) $(KERNEL_PATH_GIT)
+	@echo '[DONE]'
 
 clean:
 	-pmbootstrap zap

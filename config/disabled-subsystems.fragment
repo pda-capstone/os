@@ -25,8 +25,49 @@
 # Bluetooth
 # CONFIG_BT is not set
 
-# Sound
-# CONFIG_SOUND is not set
+# Sound — DELIBERATELY RE-ENABLED 2026-08-05
+#
+# CONFIG_SOUND is now ON by necessity, not choice. It broke the display, not
+# just audio:
+#
+#   config DRM_VC4
+#       depends on SND && SND_SOC
+#       select SND_PCM
+#       select SND_SOC_HDMI_CODEC
+#       ...
+#
+# (drivers/gpu/drm/vc4/Kconfig). vc4 — the driver for the ACTUAL display
+# pipeline (HVS/HDMI/KMS) — has a HARD `depends on SND && SND_SOC`, because
+# HDMI carries audio and vc4's HDMI encoder registers an ALSA codec as part of
+# bringing up video at all. With CONFIG_SOUND=n cascading to SND=n, `make
+# olddefconfig` could not force sound back on to satisfy the dependency (unlike
+# the WLAN/CFG80211 case below) — it silently dropped DRM_VC4 from the config
+# instead. Confirmed on-device: the compiled /boot/config-* had no DRM_VC4 line
+# AT ALL (not even "# CONFIG_DRM_VC4 is not set" — a symbol whose dependencies
+# can't be met is omitted entirely, not just turned off). v3d (3D/render-only,
+# no display capability) still loaded fine, so `ip a`/`uname -r` looked normal
+# and the Pi booted — Phosh's compositor just found zero connector-capable GPUs
+# and crash-looped (`phoc-wlroots-CRITICAL: Found 0 GPUs, cannot create
+# backend`), which greetd surfaced as a black screen with a blinking cursor and
+# no visible error. Cost a full flash-and-boot cycle to diagnose.
+#
+# Same class of bug as the WLAN/CFG80211 trap below (a hardening disable
+# tripping an unrelated `select`/`depends on` elsewhere in the tree), just
+# running in the opposite direction (starves a dependency instead of getting
+# re-selected) and landing on video instead of network. Same lesson: verify
+# the *compiled* .config after any subsystem disable, not just that the fragment
+# applied — see scripts/verify-disabled.sh (it reads the compiled config out of
+# the built .apk for exactly this reason).
+#
+# Real trade-off, same as Wi-Fi: DRM_VC4's own `select`s force SND_PCM and
+# SND_SOC_HDMI_CODEC on regardless, so as long as this device has a working
+# HDMI display, some /dev/snd (HDMI audio out) will exist — that is not
+# separable from having video on this SoC without patching vc4 itself. What
+# IS still avoidable: standalone sound hardware vc4 does NOT need. Narrow that
+# separately (e.g. `# CONFIG_SND_USB_AUDIO is not set` to stop arbitrary
+# plugged-in USB audio devices) and verify each addition doesn't re-trip this
+# same trap before trusting it.
+##  CONFIG_SOUND is not set
 
 # Module symbol versioning (MODVERSIONS)
 # Not a subsystem — a build-cost and surface reduction. With MODVERSIONS on, the

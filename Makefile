@@ -127,7 +127,7 @@ setup:
 	pmbootstrap config ssh_keys True
 	pmbootstrap config sudo_timer False
 	pmbootstrap config systemd always
-	pmbootstrap config timezone PDT
+	pmbootstrap config timezone GMT
 	pmbootstrap config ui phosh
 	pmbootstrap config ui_extras False
 	pmbootstrap config user user

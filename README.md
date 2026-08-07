@@ -54,6 +54,22 @@ lsblk
 make SDCARD=/dev/sdX install
 ```
 
+# Post Install
+
+* Connect to wifi from the quick settings pulldown menu.
+* Update the system with `sudo apk update` then `sudo apk upgrade`.
+* After connecting to wifi, you can use SSH with `ssh user@pda-tft`.
+* The hotspot on the device can be turned on and connected to, allowing the
+  use of SSH without needing to connect the device to a wifi network.
+
+> [!IMPORTANT]
+> You may want to change the sshd config for security purposes. For example,
+> disabling keyboard authentification.
+
+* Use the quick settings menu to switch between portrait and landscape mode
+  (hopefully we can get sensors in the future).
+* Use the quick settings menu to switch between docked and undocked mode.
+
 # Troubleshooting
 
 * Run `make clean` then `make` to delete existing files and reinitialize

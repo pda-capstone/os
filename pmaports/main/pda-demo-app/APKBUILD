@@ -8,7 +8,7 @@ arch="aarch64 x86_64"
 license="GPL-3.0-or-later"
 depends="py3-gobject3 gtk4.0 py3-cairo"
 depends_dev=""
-makedepends="py3-gpep517 py3-setuptools py3-wheel python3-dev"
+makedepends="py3-gpep517 py3-setuptools py3-wheel python3-dev libadwaita"
 # checkdepends="py3-pytest"
 source="$pkgname-$pkgver.tar.gz::https://github.com/pda-capstone/ui/archive/refs/tags/v$pkgver.tar.gz"
 builddir="$srcdir"/ui-$pkgver/$pkgname
@@ -41,5 +41,5 @@ package() {
 }
 
 sha512sums="
-daf350fafa29e3a070420e1e2cf3ef79b21e667f83b6090448c5a88f45df405315717bfbf8f987a5b0f924da3f9cf0024a01131096129e5d9543e3805f799716  pda-demo-app-0.1.0.tar.gz
+c4d9b673b3fc9a5c43c9227c30e66cfa237f1c16695f9ef277427d1982736057e3d424e2c773cbad4e2d89a66d49adb68c9bec61fac4b7a47006e3bda249676a  pda-demo-app-0.1.0.tar.gz
 "

@@ -1,6 +1,12 @@
-# os
+# Pocket Distro Alpha OS
 
-Power-optimized PostmarketOS image for the CM5 handheld, kernel config, build pipeline, and suspend/resume
+This repository contains tools and configuration to install PostmarketOS plus
+Pocket Distro Alpha software and configuration onto a Raspberry Pi 5 based
+smartphone-like device.
+
+A two command install can put the operating system on an SD card. The default
+install includes the PDA demo app and hotswap daemon. A dsi display is also
+enabled.
 
 # Prerequisites
 
@@ -75,15 +81,48 @@ make SDCARD=/dev/sdX install
 * Run `make clean` then `make` to delete existing files and reinitialize
 * Consult the PostmarketOS wiki: https://wiki.postmarketos.org/wiki/Pmbootstrap
 
+# How This Works
+
+`pmbootstrap` is a command line tool to help install PostmarketOS on a wide
+variety of devices. `pmbootstrap` manages configuration of the image we
+install on the device then builds and installs it, including dealing with
+cross compiling, additional packages, and more to get a usable system.
+
+`pmbootstrap` relies on the pmaports package repository, containing device
+specific configuration, to know what to install on the device. This repository
+is cloned onto the computer running `pmbootstrap`. We copy our own custom build
+files into this local repository that allows us to use custom configuration for
+our own hardware and software for our specific device.
+
+We create a custom device package for our hardware, in the format of APKBUILD,
+and we tell `pmbootstrap` to use this package, which contains information to
+get the hardware working, such as the display, and to install our custom
+software. Our software, such as the demo app, are also packaged here in
+APKBUILD format and retrieve source code from GitHub releases
+
+A `makefile` wraps all of these commands and handles setup, giving us a two
+command setup and install onto an SD card.
+
 # Maintenance
+
+## Dependencies
 
 pmaports and pmbootstrap should both be updated to remain compatible.
 pmbootstrap can be updated with `nix flake update`.
-Use `make clean` then `make` to update the pmaports cache locally, no need to
+Use `make` to update the pmaports cache locally, no need to
 change anything else in this repo because the most recent will be cloned on
-setup.
+setup. We could pin to a commit, but that probably isn't necessary.
 
 If new custom packages are added, the Makefile should be updated.
+If the existing releases for packages are updated, like a new GitHub release of
+the demo app, then the checksum in the APKBUILD file would need to be updated
+(don't forget to use `make copy` to update pmaports).
+
+## New Hardware
+
+When new hardware support is needed, a new device package will need to be
+created, or an existing package must be updated. The usercfg.txt may need to be
+changed to allow new hardware to work.
 
 # Useful Links
 

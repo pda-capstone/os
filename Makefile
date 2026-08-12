@@ -19,11 +19,15 @@ DAEMON_PATH := main/pda-hotswapd
 DAEMON_PATH_LOCAL := pmaports/$(DAEMON_PATH)
 DAEMON_PATH_GIT := $(PMAPORTS_PATH)/$(DAEMON_PATH)
 
+BACKGROUNDS_PATH := main/pda-backgrounds
+BACKGROUNDS_PATH_LOCAL := pmaports/$(BACKGROUNDS_PATH)
+BACKGROUNDS_PATH_GIT := $(PMAPORTS_PATH)/$(BACKGROUNDS_PATH)
+
 CFG_DIR := ${HOME}/.config
 CFG_FILE := $(CFG_DIR)/pmbootstrap_v3.cfg
 VERSION_FILE := $(WORK_PATH)/version
 
-EXTRA_PACKAGES := vim,pda-demo-app,pda-hotswapd,pda-hotswapd-doc,mandoc
+EXTRA_PACKAGES := vim,pda-demo-app,pda-hotswapd,pda-hotswapd-doc,mandoc,pda-backgrounds
 
 PMAPORTS_URL := https://gitlab.postmarketos.org/postmarketOS/pmaports.git
 
@@ -32,7 +36,7 @@ PMAPORTS_URL := https://gitlab.postmarketos.org/postmarketOS/pmaports.git
 all: vars setup copy
 	@echo '[DONE WITH ALL]'
 
-# echo our variables to verify.
+# echo our variables to easily verify.
 vars:
 	@echo
 	@echo
@@ -131,6 +135,9 @@ copy:
 	@echo
 	rm -rf $(DAEMON_PATH_GIT)
 	cp -r $(DAEMON_PATH_LOCAL) $(DAEMON_PATH_GIT)
+	@echo
+	rm -rf $(BACKGROUNDS_PATH_GIT)
+	cp -r $(BACKGROUNDS_PATH_LOCAL) $(BACKGROUNDS_PATH_GIT)
 	@echo
 	rm -rf $(KERNEL_PATH_GIT)
 	cp -r $(KERNEL_PATH_LOCAL) $(KERNEL_PATH_GIT)

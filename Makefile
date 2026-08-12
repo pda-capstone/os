@@ -45,25 +45,9 @@ vars:
 	@echo 'DEVICE_PATH_LOCAL' $(DEVICE_PATH_LOCAL)
 	@echo 'DEVICE_PATH_GIT' $(DEVICE_PATH_GIT)
 	@echo
-	@echo 'KERNEL_PATH' $(KERNEL_PATH)
-	@echo 'KERNEL_PATH_LOCAL' $(KERNEL_PATH_LOCAL)
-	@echo 'KERNEL_PATH_GIT' $(KERNEL_PATH_GIT)
-	@echo
-	@echo 'DEMO_APP_PATH' $(DEMO_APP_PATH)
-	@echo 'DEMO_APP_PATH_LOCAL' $(DEMO_APP_PATH_LOCAL)
-	@echo 'DEMO_APP_PATH_GIT' $(DEMO_APP_PATH_GIT)
-	@echo
-	@echo 'DAEMON_PATH' $(DAEMON_PATH)
-	@echo 'DAEMON_PATH_LOCAL' $(DAEMON_PATH_LOCAL)
-	@echo 'DAEMON_PATH_GIT' $(DAEMON_PATH_GIT)
-	@echo
-	@echo 'CFG_DIR' $(CFG_DIR)
 	@echo 'CFG_FILE' $(CFG_FILE)
-	@echo 'VERSION_FILE' $(VERSION_FILE)
 	@echo
 	@echo 'EXTRA_PACKAGES' $(EXTRA_PACKAGES)
-	@echo
-	@echo 'PMAPORTS_URL' $(PMAPORTS_URL)
 	@echo '[DONE WITH VARS]'
 
 # Set up pmbootstrap files and configuration for our device.

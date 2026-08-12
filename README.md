@@ -164,6 +164,8 @@ https://trac.gateworks.com/wiki/linux/OTG#USBDeviceMode
 https://pip-assets.raspberrypi.com/categories/685-app-notes-guides-whitepapers/documents/RP-009276-WP-1-Using%20OTG%20mode%20on%20Raspberry%20Pi%20SBCs.pdf
 https://github.com/macmpi/xg_multi
 
+https://gitlab.postmarketos.org/postmarketOS/pmaports/-/tree/main/main/postmarketos-artwork?ref_type=heads
+
 # License
 
 Copyright (C) 2026 Tanner Weber, Quinn Willett

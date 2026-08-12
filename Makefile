@@ -31,7 +31,9 @@ EXTRA_PACKAGES := vim,pda-demo-app,pda-hotswapd,pda-hotswapd-doc,mandoc,pda-back
 
 PMAPORTS_URL := https://gitlab.postmarketos.org/postmarketOS/pmaports.git
 
-.PHONY: all vars setup copy install clean
+OUTPUT_DIR = output
+
+.PHONY: all vars setup copy install image clean
 
 all: vars setup copy
 	@echo '[DONE WITH ALL]'
@@ -153,6 +155,12 @@ ifndef SDCARD
 endif
 	pmbootstrap install --sdcard=$(SDCARD)
 	@echo '[DONE WITH INSTALL]'
+
+image:
+	mkdir $(OUTPUT_DIR)
+	pmbootstrap install
+	pmbootstrap export $(OUTPUT_DIR)
+	@echo '[DONE WITH IMAGE CREATION]'
 
 clean:
 	-pmbootstrap zap

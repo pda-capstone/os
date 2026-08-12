@@ -54,6 +54,9 @@ pmbootstrap init # Use to configure beyond the default
 lsblk
 ```
 
+> [!CAUTION]
+> Ensure you have selected the correct device!
+
 4. Install onto the card. Replace X with the letter identified by `lsblk`
 
 ```bash
@@ -62,6 +65,20 @@ make SDCARD=/dev/sdX install
 
 5. The SD card can be inserted into the Raspberry Pi, then the power can be
    connected to turn on the device. It should boot into the Phosh lockscreen.
+
+# Using an Image
+
+Create an image using `make image`. The resulting image will be in the `output`
+directory as 'name-of-device.img'.
+
+Use a command like this to flash the image to the SD card.
+
+> [!CAUTION]
+> Ensure you have selected the correct device!
+
+```bash
+sudo dd if=output/pda-tft.img of=/dev/sdX status=progress bs=16M
+```
 
 # Post Install
 

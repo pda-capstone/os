@@ -57,7 +57,11 @@ vars:
 # Set up pmbootstrap files and configuration for our device.
 # This is an alternative to `pmbootstrap init --shallow-initial-clone` that
 # would require a lot of manual interaction just to init, which we override
-# anyways.
+# anyways. We are trying to cheat the init process and do it ourselves, so
+# there may be some errors as pmbootstrap is updated. We create a config file,
+# clone pmaports, and set the config (which is not exactly the same as the
+# config file?). We just keep the config file and the command line setting of
+# each config field the same.
 setup:
 	@echo
 	@echo
@@ -98,7 +102,7 @@ setup:
 	@echo '[Setting Config]'
 	pmbootstrap config aports $(PMAPORTS_PATH)
 	pmbootstrap config auto_zap_misconfigured_chroots no
-	pmbootstrap config boot_size 2048
+	pmbootstrap config boot_size 2048 # Ensure we have ample space.
 	pmbootstrap config build_default_device_arch False
 	pmbootstrap config build_pkgs_on_install True
 	pmbootstrap config ccache_size 5G
@@ -114,7 +118,7 @@ setup:
 	pmbootstrap config ssh_keys True
 	pmbootstrap config sudo_timer False
 	pmbootstrap config service_manager systemd
-	pmbootstrap config timezone GMT
+	pmbootstrap config timezone GMT # Setting this to PDT doesn't seem to work.
 	pmbootstrap config ui phosh
 	pmbootstrap config ui_extras False
 	pmbootstrap config user user

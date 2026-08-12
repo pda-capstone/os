@@ -60,6 +60,9 @@ lsblk
 make SDCARD=/dev/sdX install
 ```
 
+5. The SD card can be inserted into the Raspberry Pi, then the power can be
+   connected to turn on the device. It should boot into the Phosh lockscreen.
+
 # Post Install
 
 * Connect to wifi from the quick settings pulldown menu.
@@ -80,6 +83,10 @@ make SDCARD=/dev/sdX install
 
 * Run `make clean` then `make` to delete existing files and reinitialize
 * Consult the PostmarketOS wiki: https://wiki.postmarketos.org/wiki/Pmbootstrap
+* Plug in a monitor to the device though Micro HDMI if the display isn't
+  working.
+* Ensure you are not getting low voltage warnings from your power source.
+  The device can work under low voltage, but it can cause stability issues.
 
 # How This Works
 
@@ -103,26 +110,42 @@ APKBUILD format and retrieve source code from GitHub releases
 A `makefile` wraps all of these commands and handles setup, giving us a two
 command setup and install onto an SD card.
 
-# Maintenance
+# Maintenance & Future Development
 
-## Dependencies
+## Updating Dependencies
 
-pmaports and pmbootstrap should both be updated to remain compatible.
-pmbootstrap can be updated with `nix flake update`.
+### Pmbootstrap
+
+`pmaports` and `pmbootstrap` should both be updated to remain compatible.
+You will probably get an error from `pmbootstrap` if it is out of date.
+`pmbootstrap` can be updated with `nix flake update`.
 Use `make` to update the pmaports cache locally, no need to
 change anything else in this repo because the most recent will be cloned on
 setup. We could pin to a commit, but that probably isn't necessary.
 
-If new custom packages are added, the Makefile should be updated.
+### Custom Packages
+
+If new custom packages are added, the `Makefile` should be updated to copy these
+packages into the local pmaports directory and add them to custom packages
+in the `pmbootstrap` config (specified in the `Makefile`).
 If the existing releases for packages are updated, like a new GitHub release of
-the demo app, then the checksum in the APKBUILD file would need to be updated
+the demo app, then the checksum in the `APKBUILD` file would need to be updated
 (don't forget to use `make copy` to update pmaports).
 
 ## New Hardware
 
 When new hardware support is needed, a new device package will need to be
-created, or an existing package must be updated. The usercfg.txt may need to be
-changed to allow new hardware to work.
+created, or an existing package must be updated. A new device, for example a
+different platform than the Raspberry Pi 5, would require a new device package.
+An existing package could be copied over to assist in creation.
+A new device should also be created for different hardware configurations,
+for example a different screen, sensors, etc. Ideally, a final device with
+fixed hardware would be created, along with a specific device package that
+supports it.
+Consult [Porting to a new device](https://wiki.postmarketos.org/wiki/Porting_to_a_new_device)
+for more information.
+If a device is changed, then the usercfg.txt may simply need to be updated
+to allow new hardware to work, for example a different display.
 
 # Useful Links
 

@@ -72,7 +72,7 @@ setup:
 	echo 'extra_packages = $(EXTRA_PACKAGES)' >> $(CFG_FILE)
 	echo 'hostname = pda-tft' >> $(CFG_FILE)
 	echo 'is_default_channel = False' >> $(CFG_FILE)
-	echo 'systemd = always' >> $(CFG_FILE)
+	echo 'service_manager = systemd' >> $(CFG_FILE)
 	echo 'ui = phosh' >> $(CFG_FILE)
 	echo 'work = $(WORK_PATH)' >> $(CFG_FILE)
 	echo '' >> $(CFG_FILE)
@@ -113,7 +113,7 @@ setup:
 	pmbootstrap config ssh_key_glob ~/.ssh/*.pub
 	pmbootstrap config ssh_keys True
 	pmbootstrap config sudo_timer False
-	pmbootstrap config systemd always
+	pmbootstrap config service_manager systemd
 	pmbootstrap config timezone GMT
 	pmbootstrap config ui phosh
 	pmbootstrap config ui_extras False

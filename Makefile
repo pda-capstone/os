@@ -120,7 +120,7 @@ setup:
 	pmbootstrap config ssh_keys True
 	pmbootstrap config sudo_timer False
 	pmbootstrap config service_manager systemd
-	pmbootstrap config timezone GMT # Setting this to PDT doesn't seem to work.
+	pmbootstrap config timezone 'America/Los_Angeles'
 	pmbootstrap config ui phosh
 	pmbootstrap config ui_extras False
 	pmbootstrap config user user

@@ -11,7 +11,7 @@
 # CONFIG_BT is not set
 
 # Sound
-# CONFIG_SOUND is not set
+##  CONFIG_SOUND is not set
 
 # Module symbol versioning (MODVERSIONS)
 

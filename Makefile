@@ -26,8 +26,12 @@ VERSION_FILE := $(WORK_PATH)/version
 EXTRA_PACKAGES := vim,pda-demo-app,pda-hotswapd,pda-hotswapd-doc,mandoc
 
 PMAPORTS_URL := https://gitlab.postmarketos.org/postmarketOS/pmaports.git
+PMAPORTS_COMMIT := b2ec188d30f6408585d44e7f6473142e4c052a18
 
-.PHONY: all vars setup copy install clean
+PMBOOTSTRAP_VERSION := 3.10.3
+
+
+.PHONY: all vars setup copy kernel install clean
 
 all: vars setup copy
 	@echo '[DONE WITH ALL]'
@@ -113,7 +117,7 @@ setup:
 	pmbootstrap config boot_size 2048
 	pmbootstrap config build_default_device_arch False
 	pmbootstrap config build_pkgs_on_install True
-	pmbootstrap config ccache_size 5G
+	pmbootstrap config ccache_size 10G
 	pmbootstrap config device $(DEVICE)
 	pmbootstrap config extra_packages $(EXTRA_PACKAGES)
 	pmbootstrap config extra_space 0
@@ -151,6 +155,23 @@ copy:
 	rm -rf $(KERNEL_PATH_GIT)
 	cp -r $(KERNEL_PATH_LOCAL) $(KERNEL_PATH_GIT)
 	@echo '[DONE WITH COPY]'
+
+# Command to rebuild kernel with the 
+kernel: copy
+	@echo
+	@echo
+	@echo '[APPLYING FRAGMENT AND REBUILDING KERNEL]'
+	sh scripts/apply-fragment.sh $(KERNEL_PATH_GIT)/common-changes.config \
+		config/disabled-subsystems.fragment
+	@echo
+	@echo '[ADDING HASH]'
+	sum=$$(sha512sum $(KERNEL_PATH_GIT)/common-changes.config | cut -d' ' -f1); \
+	awk -v s="$$sum" '/  common-changes\.config$$/ { print s "  common-changes.config"; next } { print }' \
+		$(KERNEL_PATH_GIT)/APKBUILD > $(KERNEL_PATH_GIT)/APKBUILD.tmp; \
+	mv $(KERNEL_PATH_GIT)/APKBUILD.tmp $(KERNEL_PATH_GIT)/APKBUILD
+	@echo
+	@echo '[COMPILING KERNEL]'
+	pmbootstrap build --force linux-$(KERNEL)
 
 install:
 ifndef SDCARD

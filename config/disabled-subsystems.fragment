@@ -1,0 +1,18 @@
+# subsystems to DISABLE.
+
+# Wireless (802.11) — DELIBERATELY RE-ENABLED 2026-08-03
+
+##  CONFIG_WIRELESS is not set
+##  CONFIG_WLAN is not set
+##  CONFIG_CFG80211 is not set
+##  CONFIG_MAC80211 is not set
+
+# Bluetooth
+# CONFIG_BT is not set
+
+# Sound
+# CONFIG_SOUND is not set
+
+# Module symbol versioning (MODVERSIONS)
+
+# CONFIG_MODVERSIONS is not set

@@ -8,6 +8,10 @@ A two command install can put the operating system on an SD card. The default
 install includes the PDA demo app and hotswap daemon. A dsi display is also
 enabled.
 
+![Screenshot](./assets/lock_and_home.png)
+
+*Screenshot of the lock and home screens*
+
 # Prerequisites
 
 * Micro SD card

@@ -27,7 +27,7 @@ CFG_DIR := ${HOME}/.config
 CFG_FILE := $(CFG_DIR)/pmbootstrap_v3.cfg
 VERSION_FILE := $(WORK_PATH)/version
 
-EXTRA_PACKAGES := vim,pda-demo-app,pda-hotswapd,pda-hotswapd-doc,mandoc,pda-backgrounds
+EXTRA_PACKAGES := vim,git,pda-demo-app,pda-hotswapd,pda-hotswapd-doc,mandoc,pda-backgrounds
 
 PMAPORTS_URL := https://gitlab.postmarketos.org/postmarketOS/pmaports.git
 

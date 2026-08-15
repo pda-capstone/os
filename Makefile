@@ -1,4 +1,7 @@
-WORK_PATH := ${HOME}/.local/var/pmbootstrap
+PMBOOTSTRAP_VERSION = 3.11.1
+INPUT_FILE = pmbootstrap_v$(PMBOOTSTRAP_VERSION)_input.generated
+
+WORK_PATH = ${HOME}/.local/var/pmbootstrap
 PMAPORTS_PATH := $(WORK_PATH)/cache_git/pmaports
 
 DEVICE := pda-tft
@@ -23,19 +26,19 @@ BACKGROUNDS_PATH := main/pda-backgrounds
 BACKGROUNDS_PATH_LOCAL := pmaports/$(BACKGROUNDS_PATH)
 BACKGROUNDS_PATH_GIT := $(PMAPORTS_PATH)/$(BACKGROUNDS_PATH)
 
-CFG_DIR := ${HOME}/.config
-CFG_FILE := $(CFG_DIR)/pmbootstrap_v3.cfg
-VERSION_FILE := $(WORK_PATH)/version
+# Configuration
+BOOT_SIZE = 2048
+EXTRA_PACKAGES = vim,git,pda-demo-app,pda-hotswapd,pda-hotswapd-doc,mandoc,pda-backgrounds
+USER_INTERFACE = phosh
 
-EXTRA_PACKAGES := vim,git,pda-demo-app,pda-hotswapd,pda-hotswapd-doc,mandoc,pda-backgrounds
-
-PMAPORTS_URL := https://gitlab.postmarketos.org/postmarketOS/pmaports.git
+PMAPORTS_URL = https://gitlab.postmarketos.org/postmarketOS/pmaports.git
+PMAPORTS_COMMIT = 2bf2f3329e53c077142d20a5731086466f31ebfd
 
 OUTPUT_DIR = output
 
-.PHONY: all vars setup copy install image clean
+.PHONY: all vars config init copy install image clean
 
-all: vars setup copy
+all: vars copy
 	@echo '[DONE WITH ALL]'
 
 # echo our variables to easily verify.
@@ -51,85 +54,61 @@ vars:
 	@echo 'DEVICE_PATH_LOCAL' $(DEVICE_PATH_LOCAL)
 	@echo 'DEVICE_PATH_GIT' $(DEVICE_PATH_GIT)
 	@echo
-	@echo 'CFG_FILE' $(CFG_FILE)
-	@echo
 	@echo 'EXTRA_PACKAGES' $(EXTRA_PACKAGES)
 	@echo '[DONE WITH VARS]'
 
-# Set up pmbootstrap files and configuration for our device.
-# This is an alternative to `pmbootstrap init --shallow-initial-clone` that
-# would require a lot of manual interaction just to init, which we override
-# anyways. We are trying to cheat the init process and do it ourselves, so
-# there may be some errors as pmbootstrap is updated. We create a config file,
-# clone pmaports, and set the config (which is not exactly the same as the
-# config file?). We just keep the config file and the command line setting of
-# each config field the same.
-setup:
-	@echo
-	@echo
-	@echo '[Creating Config File]'
-	mkdir -p $(CFG_DIR)
-	rm -f $(CFG_FILE)
-	touch $(CFG_FILE)
-	echo '[pmbootstrap]' >> $(CFG_FILE)
-	echo 'aports = $(PMAPORTS_PATH)' >> $(CFG_FILE)
-	echo 'boot_size = 2048' >> $(CFG_FILE)
-	echo 'device = pda-tft' >> $(CFG_FILE)
-	echo 'extra_packages = $(EXTRA_PACKAGES)' >> $(CFG_FILE)
-	echo 'hostname = pda-tft' >> $(CFG_FILE)
-	echo 'is_default_channel = False' >> $(CFG_FILE)
-	echo 'service_manager = systemd' >> $(CFG_FILE)
-	echo 'ui = phosh' >> $(CFG_FILE)
-	echo 'work = $(WORK_PATH)' >> $(CFG_FILE)
-	echo '' >> $(CFG_FILE)
-	echo '[providers]' >> $(CFG_FILE)
-	echo '' >> $(CFG_FILE)
-	echo '[mirrors]' >> $(CFG_FILE)
-	echo '' >> $(CFG_FILE)
-	@echo
-	@echo
-	@echo '[Creating Version File]'
-	mkdir -p $(WORK_PATH)
-	rm -f $(VERSION_FILE)
-	touch $(VERSION_FILE)
-	echo '8' > $(VERSION_FILE)
-	@echo
-	@echo
-	@echo '[Creating Pmaports Cache]'
-	rm -rf $(PMAPORTS_PATH)
-	mkdir -p $(WORK_PATH)/cache_git
-	git clone $(PMAPORTS_URL) $(PMAPORTS_PATH) --depth=1
-	@echo
-	@echo
-	@echo '[Setting Config]'
-	pmbootstrap config aports $(PMAPORTS_PATH)
-	pmbootstrap config auto_zap_misconfigured_chroots no
-	pmbootstrap config boot_size 2048 # Ensure we have ample space.
-	pmbootstrap config build_default_device_arch False
-	pmbootstrap config build_pkgs_on_install True
-	pmbootstrap config ccache_size 5G
+# We automate calling `pmbootstrap init`, giving us a single command setup with
+# no interaction required.
+init: config
+	pmbootstrap init --shallow-initial-clone < $(INPUT_FILE)
+	pmbootstrap config auto_zap_misconfigured_chroots yes
 	pmbootstrap config device $(DEVICE)
-	pmbootstrap config extra_packages $(EXTRA_PACKAGES)
-	pmbootstrap config extra_space 0
-	pmbootstrap config hostname $(DEVICE)
-	pmbootstrap config is_default_channel False
-	pmbootstrap config kernel stable
-	pmbootstrap config locale en_US.UTF-8
-	pmbootstrap config qemu_redir_stdio False
-	pmbootstrap config ssh_key_glob ~/.ssh/*.pub
-	pmbootstrap config ssh_keys True
-	pmbootstrap config sudo_timer False
-	pmbootstrap config service_manager systemd
-	pmbootstrap config timezone 'America/Los_Angeles'
-	pmbootstrap config ui phosh
-	pmbootstrap config ui_extras False
-	pmbootstrap config user user
-	pmbootstrap config work $(WORK_PATH)
-	@echo '[DONE WITH SETUP]'
+	# pmbootstrap config timezone 'America/Los_Angeles'
+	@echo '[DONE WITH INIT]'
+
+# We create a file that can be used as inputs to the interactive
+# `pmbootstrap init`. This will be highly dependent on the interactive
+# interface of `pmbootstrap init`, so we want to make sure versions match.
+# Consider running `make config` then checking the contents of the file whilst
+# manually running `pmbootstrap init` to see if the inputs are the same. This
+# configuration is just for initialization, not what will be installed. We can
+# change it later.
+config:
+ifneq ($(PMBOOTSTRAP_VERSION), $(shell pmbootstrap --version))
+	$(error pmbootstrap version must match configuration version $(PMBOOTSTRAP_VERSION))
+endif
+	rm -f $(INPUT_FILE)
+	touch $(INPUT_FILE)
+	echo $(WORK_PATH) >> $(INPUT_FILE)
+	echo $(PMAPORTS_PATH) >> $(INPUT_FILE)
+	echo edge >> $(INPUT_FILE)
+	echo raspberry >> $(INPUT_FILE)
+	echo pi5 >> $(INPUT_FILE)
+	echo y >> $(INPUT_FILE)
+	echo user >> $(INPUT_FILE)
+	echo pulseaudio >> $(INPUT_FILE)
+	echo wpa_supplicant >> $(INPUT_FILE)
+	echo developer >> $(INPUT_FILE)
+	echo $(USER_INTERFACE) >> $(INPUT_FILE)
+	echo systemd >> $(INPUT_FILE)
+	echo y >> $(INPUT_FILE)
+	echo 0 >> $(INPUT_FILE)
+	echo $(BOOT_SIZE) >> $(INPUT_FILE)
+	echo '' >> $(INPUT_FILE)
+	echo '' >> $(INPUT_FILE)
+	echo n >> $(INPUT_FILE)
+	echo n >> $(INPUT_FILE)
+	echo $(EXTRA_PACKAGES) >> $(INPUT_FILE)
+	echo '' >> $(INPUT_FILE)
+	echo $(DEVICE) >> $(INPUT_FILE)
+	echo y >> $(INPUT_FILE)
+	echo y >> $(INPUT_FILE)
+	echo '' >> $(INPUT_FILE)
+	echo '' >> $(INPUT_FILE)
 
 # Our custom files are copied into the pmaports git cache to allow
 # pmbootstrap to see them.
-copy:
+copy: init
 	@echo
 	@echo
 	@echo '[Copying Packages]'

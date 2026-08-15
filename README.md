@@ -135,8 +135,9 @@ command setup and install onto an SD card.
 
 `pmaports` and `pmbootstrap` should both be updated to remain compatible.
 You will probably get an error from `pmbootstrap` if it is out of date.
-`pmbootstrap` can be updated with `nix flake update`.
-Use `make` to update the pmaports cache locally, no need to
+`pmbootstrap` can be updated with `nix flake update`. When `pmbootstrap` is
+updated, check `INPUT_FILE` in the `Makefile` to see if it needs
+to be updated. Use `make` to update the pmaports cache locally, no need to
 change anything else in this repo because the most recent will be cloned on
 setup. We could pin to a commit, but that probably isn't necessary.
 

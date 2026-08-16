@@ -32,11 +32,11 @@ EXTRA_PACKAGES = vim,git,pda-demo-app,pda-hotswapd,pda-hotswapd-doc,mandoc,pda-b
 USER_INTERFACE = phosh
 
 PMAPORTS_URL = https://gitlab.postmarketos.org/postmarketOS/pmaports.git
-PMAPORTS_COMMIT = 2bf2f3329e53c077142d20a5731086466f31ebfd
+PMAPORTS_COMMIT = b2ec188d30f6408585d44e7f6473142e4c052a18
 
 OUTPUT_DIR = output
 
-.PHONY: all vars config init copy install image clean
+.PHONY: all vars config init copy kernel install image clean
 
 all: vars copy
 	@echo '[DONE WITH ALL]'
@@ -127,6 +127,23 @@ copy: init
 	rm -rf $(KERNEL_PATH_GIT)
 	cp -r $(KERNEL_PATH_LOCAL) $(KERNEL_PATH_GIT)
 	@echo '[DONE WITH COPY]'
+
+# Command to rebuild kernel with the 
+kernel: copy
+	@echo
+	@echo
+	@echo '[APPLYING FRAGMENT AND REBUILDING KERNEL]'
+	sh scripts/apply-fragment.sh $(KERNEL_PATH_GIT)/common-changes.config \
+		config/disabled-subsystems.fragment
+	@echo
+	@echo '[ADDING HASH]'
+	sum=$$(sha512sum $(KERNEL_PATH_GIT)/common-changes.config | cut -d' ' -f1); \
+	awk -v s="$$sum" '/  common-changes\.config$$/ { print s "  common-changes.config"; next } { print }' \
+		$(KERNEL_PATH_GIT)/APKBUILD > $(KERNEL_PATH_GIT)/APKBUILD.tmp; \
+	mv $(KERNEL_PATH_GIT)/APKBUILD.tmp $(KERNEL_PATH_GIT)/APKBUILD
+	@echo
+	@echo '[COMPILING KERNEL]'
+	pmbootstrap build --force linux-$(KERNEL)
 
 install:
 ifndef SDCARD

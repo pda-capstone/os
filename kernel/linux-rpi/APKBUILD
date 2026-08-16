@@ -1,8 +1,16 @@
-# Maintainer: Tanner Weber <tannerw@pdx.edu>
+# Maintainer: Natanael Copa <ncopa@alpinelinux.org>
 
 pkgname=linux-rpi
-pkgver=6.18.44
+pkgver=6.18.41
 _kernver=${pkgver%.*}
+# hardened-pmos: pkgrel MUST stay ahead of the upstream package's pkgrel.
+# apk installs the highest version available, and the binary repo ships
+# linux-rpi-6.18.41-r0. A locally built -r0 would tie (or an older pkgver would
+# simply lose) and `pmbootstrap install` would SILENTLY substitute the stock
+# kernel — which is what happened on 2026-08-03: the Pi booted a stock 6.18.41
+# with wireless/BT/sound fully enabled while the local build sat unused at
+# 6.18.35-r0. Bump this whenever you rebase onto a new upstream pkgver.
+# Verify on the device with `uname -r`: yours ends "-1-rpi", stock ends "-0-rpi".
 pkgrel=1
 pkgdesc="Linux kernel with Raspberry Pi patches"
 url="https://github.com/raspberrypi/linux"
@@ -11,11 +19,20 @@ _depends_dev="perl gmp-dev elfutils-dev bash mpc1-dev mpfr-dev"
 makedepends="$_depends_dev gcc>=13.1.1_git20230603 sed installkernel bc linux-headers linux-firmware-any
 	bison flex openssl-dev>3 findutils xz mawk
 "
-options="!strip !check !tracedeps pmb:cross-native"
+# hardened-pmos: pmb:cross-native makes pmbootstrap build this ENTIRELY in the
+# native x86_64 chroot with a real cross-toolchain — no QEMU at all. See
+# pmb/build/autodetect.py:crosscompile(): without it this recipe falls through to
+# CROSSDIRECT, which only accelerates the compiler and leaves make/fixdep/ld/
+# modpost emulated. Measured: a build without this ran 100% emulated (every cc1
+# under qemu-aarch64-static). Absent because this is the upstream ALPINE aport,
+# which has no reason to declare pmbootstrap-specific options; pmaports' own
+# kernel recipes set it.
+options="!strip !check pmb:cross-native"
 _rpi_repo="https://github.com/raspberrypi/linux.git"
 _linux_repo="https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux.git"
-source="https://cdn.kernel.org/pub/linux/kernel/v${pkgver%%.*}.x/linux-$_kernver.tar.xz
-	patch-$pkgver.patch.xz::https://cdn.kernel.org/pub/linux/kernel/v${pkgver%%.*}.x/patch-$pkgver.xz
+
+source="https://distfiles.alpinelinux.org/distfiles/edge/linux-$_kernver.tar.xz
+	patch-$pkgver.patch.xz::https://distfiles.alpinelinux.org/distfiles/edge/patch-$pkgver.patch.xz
 	https://dev.alpinelinux.org/archive/rpi-patches/rpi-$pkgver-alpine.patch
 
 	common-changes.config
@@ -29,7 +46,7 @@ for _f in $_flavors; do
 	if [ "linux-$_f" != "$pkgname" ]; then
 		subpackages="$subpackages linux-$_f::$CBUILD_ARCH"
 	fi
-	subpackages="$subpackages linux-$_f-dev:_dev:$CBUILD_ARCH"
+	# hardened-pmos: the linux-rpi-dev subpackage is intentionally NOT built.
 done
 
 case "$CARCH" in
@@ -168,10 +185,18 @@ _package() {
 		INSTALL_DTBS_PATH="$INSTALL_DTBS_PATH"
 	cp Module.symvers.backup Module.symvers
 
-	install -Dm644 "$_builddir"/.config \
-		"$_outdir"/boot/config-"$_abi_release"
-	install -Dm644 "$_builddir"/System.map \
-		"$_outdir"/boot/System.map-"$_abi_release"
+	# hardened-pmos: on aarch64 the kernel's `make install` drops the raw
+	# vmlinux ELF as /boot/vmlinux-$_abi_release, which is NOT bootable and does
+	# not match the "vmlinuz*" name postmarketOS boot-deploy looks for (the
+	# image-finalize step fails with "No kernel found in /boot"). Install the
+	# actual bootable Image as /boot/vmlinuz-$_buildflavor (matching the module
+	# vmlinuz symlink created below) and remove the stray ELF. (32-bit arm uses
+	# `zinstall` above, which already produces a correct vmlinuz.)
+	if [ "$CARCH" = "aarch64" ]; then
+		install -Dm644 "arch/$_carch/boot/Image" \
+			"$_outdir"/boot/vmlinuz-"$_buildflavor"
+		rm -f "$_outdir"/boot/vmlinux-"$_abi_release"
+	fi
 
 	rm -f "$_outdir"/lib/modules/$_abi_release/build \
 		"$_outdir"/lib/modules/$_abi_release/source
@@ -282,7 +307,7 @@ _dev() {
 
 sha512sums="
 88599ffdec96d150c1feb9b261ba93bb0301a9d0e1ad6bef7aeab1f5372cbfc57d8b43c7e902bd8f76921d1dbd8189663c142ea869e51d0e2b483b150ee00fe0  linux-6.18.tar.xz
-e3e46ca232c491d1579a1c94c219908886198decaa3eb069011aa9012a0ed9ae65103787755149745ef76aa3920cb97b09329b8c87e1e2f7f2b4189993f617de  patch-6.18.44.patch.xz
-617b0736ca7adfe14e5d1a519a6c79687a5687d93f6d2105a23ea87c8d2a1d44ee59832a9e4e53a94bdc990ec98bcd80305a5f129662de6579c07765a78bea3f  rpi-6.18.44-alpine.patch
+10f64066a9c5cf297981e2df6eef31593b5c33f55546f3fd18733c55ac1607ad8e4229f538f3027fce27dda178bebd05bb99fd1b3d8a06e3e8f5b8f481c7087e  patch-6.18.41.patch.xz
+e50faf869036b9a905333e2183a05f08de72df849003850bef7b302123baa15386e159d2ed14479a8b00cab56e0383b13899e25420759e952a507dab37a8759b  rpi-6.18.41-alpine.patch
 b7fa577b8630aa116b4bb4194e3779e12d40a9a15a3a2b618289fd637deb3fef89d368a2ce71e75ae309a9a384acbf666019e8374ecefa13ef12a957ec3dda6a  common-changes.config
 "

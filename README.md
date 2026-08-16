@@ -1,135 +1,159 @@
-# hardened-pmos-build (native Linux)
+# Pocket Distro Alpha OS
 
-Reproducible build of a **custom postmarketOS image for the Raspberry Pi CM5**
-(BCM2712, aarch64) whose kernel has selected subsystems **disabled** — the
-native-Linux variant that runs `pmbootstrap` directly (no Docker).
+This repository contains tools and configuration to install PostmarketOS plus
+Pocket Distro Alpha software and configuration onto a Raspberry Pi 5 based
+smartphone-like device.
 
-> This is the Linux twin of the Windows/Docker project. The config, kernel
-> recipe, and validation are identical; the difference is that here pmbootstrap
-> runs on the host, crossdirect is enabled (fast builds), and you can flash the
-> CM5 directly. Use this on a Linux machine; use the Docker variant on Windows.
+A two command install can put the operating system on an SD card. The default
+install includes the PDA demo app and hotswap daemon. A dsi display is also
+enabled.
 
-## How it works
+# Prerequisites
 
-- The disabled subsystems are declared in
-  [`config/disabled-subsystems.fragment`](config/disabled-subsystems.fragment).
-- The CM5 kernel is Alpine's **`linux-rpi`**; we vendor its recipe in
-  [`kernel/linux-rpi/`](kernel/linux-rpi/), inject our disables, and **compile
-  the kernel from source** so postmarketOS installs our hardened kernel.
-- [`scripts/build.sh`](scripts/build.sh) drives pmbootstrap end to end.
-- CI ([`.github/workflows/build.yml`](.github/workflows/build.yml)) does the same
-  on a Linux runner whenever `config/` or `kernel/` changes.
+* Micro SD card
+* Linux (A virtual machine with SD card access works)
+* Nix with flakes
 
-## Prerequisites
+The recommended way is to start a linux virtual machine that can read and
+write to the Micro SD card.
 
-- A Linux host (bare metal, dual-boot, or a full VM). x86 is fine — the kernel
-  is cross-compiled. **Debian/Ubuntu is the supported, tested host**: `setup.sh`
-  installs `qemu-user-static`, which registers the aarch64 QEMU binfmt with the
-  **`F` (fix-binary) flag** that crossdirect needs for fast, native-speed builds.
-  Other distros (Alpine, etc.) may register the binfmt *without* `F`, in which
-  case builds silently fall back to slow full emulation — see "Fast builds"
-  below.
-- `sudo` privileges (pmbootstrap uses sudo for chroots; it refuses to run as root).
-- `~/.local/bin` on your `PATH`.
+## Windows
 
-## Setup (once)
+TODO
 
-**Fresh VM, one command.** On a bare Debian/Ubuntu box this installs git, clones
-the repo to `~/pmos-hardened-linux`, runs setup, and confirms the crossdirect
-fast path (self-healing the `F` flag if needed):
+## MacOS
 
-```sh
-curl -fsSL https://raw.githubusercontent.com/quinnwillett/pmos-hardened-linux/main/scripts/bootstrap-vm.sh | sh
+TODO
+
+## Linux
+
+Nix can be installed on top of any linux distro.
+https://nixos.org/download/#nix-install-linux
+
+# Usage
+
+1. Clone this git repo
+
+```bash
+git clone https://github.com/pda-capstone/os.git
+cd os
 ```
 
-It's idempotent — safe to re-run. Add `--build` to go straight into the first
-build (clone first so the flag reaches the script):
+2. Perform setup and configuration
 
-```sh
-git clone https://github.com/quinnwillett/pmos-hardened-linux.git
-sh pmos-hardened-linux/scripts/bootstrap-vm.sh --build
+```bash
+nix develop
+make clean
+make
+pmbootstrap init # Use to configure beyond the default
 ```
 
-**Or do it by hand** from an existing checkout:
+3. Insert Micro SD card and identify it. It will probably be sdb.
 
-```sh
-make setup          # installs pmbootstrap + host tools (git, kpartx, qemu-user-static, ...)
-pmbootstrap --version   # sanity check -> 3.10.3
+```bash
+lsblk
 ```
 
-If `pmbootstrap` isn't found afterward, add `~/.local/bin` to your PATH:
-```sh
-echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.profile && . ~/.profile
+4. Install onto the card. Replace X with the letter identified by `lsblk`
+
+```bash
+make SDCARD=/dev/sdX install
 ```
 
-## Fast builds (crossdirect)
+# Post Install
 
-Cross-compiling for aarch64 on an x86 host is fast **only** when the QEMU binfmt
-is registered with the `F` flag; otherwise the compiler runs fully emulated and a
-cold kernel build takes hours instead of ~20 minutes. On Debian/Ubuntu `setup.sh`
-handles this. Verify before your first build:
+* Connect to wifi from the quick settings pulldown menu.
+* Update the system with `sudo apk update` then `sudo apk upgrade`.
+* After connecting to wifi, you can use SSH with `ssh user@pda-tft`.
+* The hotspot on the device can be turned on and connected to, allowing the
+  use of SSH without needing to connect the device to a wifi network.
 
-```sh
-cat /proc/sys/fs/binfmt_misc/qemu-aarch64      # want: flags: ...F...
-```
+> [!IMPORTANT]
+> You may want to change the sshd config for security purposes. For example,
+> disabling keyboard authentification.
 
-`build.sh` also **checks this automatically** and fails fast (rather than
-emulating for hours) if the `F` flag is missing. If it ever is, re-register it:
+* Use the quick settings menu to switch between portrait and landscape mode
+  (hopefully we can get sensors in the future).
+* Use the quick settings menu to switch between docked and undocked mode.
 
-```sh
-sudo sh scripts/fix-binfmt.sh
-```
+# Troubleshooting
 
-While a build runs, you can confirm it's going native: `top` should show
-`cc1`/`cc1plus` with **no** `qemu-aarch64-static` prefix.
+* Run `make clean` then `make` to delete existing files and reinitialize
+* Consult the PostmarketOS wiki: https://wiki.postmarketos.org/wiki/Pmbootstrap
 
-## Build
+# How This Works
 
-```sh
-make build          # compile the hardened kernel + build the image -> out/
-make verify         # confirm the subsystems are actually off in the compiled kernel
-make all            # build + verify
-```
+`pmbootstrap` is a command line tool to help install PostmarketOS on a wide
+variety of devices. `pmbootstrap` manages configuration of the image we
+install on the device then builds and installs it, including dealing with
+cross compiling, additional packages, and more to get a usable system.
 
-`DEVICE=raspberry-pi5` in [`config/build.env`](config/build.env) is already
-correct for the CM5. The first build compiles the kernel (with crossdirect,
-~tens of minutes); later builds reuse the ccache and are faster.
+`pmbootstrap` relies on the pmaports package repository, containing device
+specific configuration, to know what to install on the device. This repository
+is cloned onto the computer running `pmbootstrap`. We copy our own custom build
+files into this local repository that allows us to use custom configuration for
+our own hardware and software for our specific device.
 
-## Flash to the CM5
+We create a custom device package for our hardware, in the format of APKBUILD,
+and we tell `pmbootstrap` to use this package, which contains information to
+get the hardware working, such as the display, and to install our custom
+software. Our software, such as the demo app, are also packaged here in
+APKBUILD format and retrieve source code from GitHub releases
 
-Once built, write it straight to the card / eMMC:
-```sh
-make flash SDCARD=/dev/sdX      # replace sdX with the REAL device (check with lsblk!)
-```
-Double-check the device name — writing to the wrong one destroys data.
+A `makefile` wraps all of these commands and handles setup, giving us a two
+command setup and install onto an SD card.
 
-## Editing what gets disabled
+# Maintenance
 
-Add lines to [`config/disabled-subsystems.fragment`](config/disabled-subsystems.fragment):
-```
-# CONFIG_BT is not set
-# CONFIG_WIRELESS is not set
-```
-`apply-fragment.sh` turns these into `CONFIG_X=n` in the recipe, the kernel is
-recompiled, and `verify-disabled.sh` confirms they're off in the compiled config.
+## Dependencies
 
-## Security note on kernel sources
+pmaports and pmbootstrap should both be updated to remain compatible.
+pmbootstrap can be updated with `nix flake update`.
+Use `make` to update the pmaports cache locally, no need to
+change anything else in this repo because the most recent will be cloned on
+setup. We could pin to a commit, but that probably isn't necessary.
 
-The recipe fetches the kernel source from Alpine's official distfiles, and the
-`sha512sums` are Alpine's own known-good hashes (only our edited
-`common-changes.config` is re-hashed at build time). So every download is
-verified against a trusted hash — a tampered mirror fails the check and the build
-aborts. See [`kernel/linux-rpi/APKBUILD`](kernel/linux-rpi/APKBUILD).
+If new custom packages are added, the Makefile should be updated.
+If the existing releases for packages are updated, like a new GitHub release of
+the demo app, then the checksum in the APKBUILD file would need to be updated
+(don't forget to use `make copy` to update pmaports).
 
-## Reproducibility
+## New Hardware
 
-Pin everything in [`config/build.env`](config/build.env)
-(`PMBOOTSTRAP_VERSION`, `KERNEL_PKG`) and the vendored recipe version, plus
-`SOURCE_DATE_EPOCH` from the repo's HEAD commit. Set `PMAPORTS_REF` to a real
-commit for full determinism (it's empty by default and the build warns).
+When new hardware support is needed, a new device package will need to be
+created, or an existing package must be updated. The usercfg.txt may need to be
+changed to allow new hardware to work.
 
-## Deferred: boot test
+# Useful Links
 
-`scripts/boot-test.sh` is a stub. On Linux you can also boot-test locally by
-flashing a spare card and powering the CM5, or wire it into CI on a self-hosted
-CM5 runner later.
+https://wiki.postmarketos.org/wiki/Porting_to_a_new_device
+https://wiki.postmarketos.org/wiki/Phosh
+https://wiki.postmarketos.org/wiki/USB_Network
+https://wiki.postmarketos.org/wiki/USB_Internet
+https://docs.postmarketos.org/pmbootstrap/main/cross_compiling.html
+
+https://wiki.alpinelinux.org/wiki/Creating_an_Alpine_package
+https://wiki.alpinelinux.org/wiki/APKBUILD_examples
+https://wiki.alpinelinux.org/wiki/Repositories
+
+https://wiki.alpinelinux.org/wiki/Raspberry_Pi
+https://trac.gateworks.com/wiki/linux/OTG#USBDeviceMode
+https://pip-assets.raspberrypi.com/categories/685-app-notes-guides-whitepapers/documents/RP-009276-WP-1-Using%20OTG%20mode%20on%20Raspberry%20Pi%20SBCs.pdf
+https://github.com/macmpi/xg_multi
+
+# License
+
+Copyright (C) 2026 Tanner Weber, Quinn Willett
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <https://www.gnu.org/licenses/>.

@@ -1,8 +1,7 @@
 #!/bin/sh
 #
 # apply-fragment.sh — inject our "disable" directives into the linux-rpi recipe
-# Usage:
-#   apply-fragment.sh <common-changes.config> <fragment_file>
+# Usage: apply-fragment.sh <common-changes.config> <fragment_file>
 
 set -eu
 
@@ -29,8 +28,7 @@ marker_end="# <<< hardened-pmos disables (generated) <<<"
 # Work out which symbols to disable (parser lives in lib.sh).
 symbols=$(parse_disabled_symbols "$fragment_file")
 
-# Remove any previous generated block so re-runs stay idempotent. Use a temp
-# file rather than in-place editing so we don't depend on GNU sed.
+# Remove any previous generated block 
 tmp="${changes_file}.tmp.$$"
 awk -v b="$marker_begin" -v e="$marker_end" '
     $0 == b { skip = 1 }

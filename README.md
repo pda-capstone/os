@@ -21,6 +21,14 @@ enabled.
 The recommended way is to start a linux virtual machine that can read and
 write to the Micro SD card.
 
+### Hardware Configuration
+
+At a minimum, a Raspberry Pi 5 is needed. The current configuration uses a DSI
+display, specifically the BigTreeTech TFT50 v2.0. The display is not needed
+if other peripherals that will work out of the box are used, like an HDMI
+display or USB keyboard. Other hardware support may require modifying the
+Pi's `usercfg.txt`.
+
 ## Windows
 
 TODO

@@ -4,6 +4,8 @@ INPUT_FILE = pmbootstrap_v$(PMBOOTSTRAP_VERSION)_input.generated
 WORK_PATH = ${HOME}/.local/var/pmbootstrap
 PMAPORTS_PATH := $(WORK_PATH)/cache_git/pmaports
 
+CFG_FILE = ${HOME}/.config/pmbootstrap_v3.cfg
+
 DEVICE := pda-tft
 DEVICE_PATH := device/downstream/device-$(DEVICE)
 DEVICE_PATH_LOCAL := pmaports/$(DEVICE_PATH)

@@ -161,6 +161,7 @@ image:
 	@echo '[DONE WITH IMAGE CREATION]'
 
 clean:
-	-pmbootstrap zap
+	-pmbootstrap zap --all
 	-sudo rm -rf $(WORK_PATH)
 	-rm -f $(CFG_FILE)
+	@echo '[CLEAN DONE]'

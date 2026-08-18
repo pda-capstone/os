@@ -38,34 +38,34 @@ https://nixos.org/download/#nix-install-linux
 
 1. Clone this git repo
 
-```bash
-git clone https://github.com/pda-capstone/os.git
-cd os
-```
+   ```bash
+   git clone https://github.com/pda-capstone/os.git
+   cd os
+   ```
 
 2. Perform setup and configuration
 
-```bash
-nix develop
-make clean
-make
-pmbootstrap init # Use to configure beyond the default
-```
+   ```bash
+   nix develop --experimental-features 'nix-command flakes'
+   make clean
+   make
+   pmbootstrap init # Use to configure beyond the default
+   ```
 
 3. Insert Micro SD card and identify it. It will probably be sdb.
 
-```bash
-lsblk
-```
+   ```bash
+   lsblk
+   ```
 
 > [!CAUTION]
 > Ensure you have selected the correct device!
 
 4. Install onto the card. Replace X with the letter identified by `lsblk`
 
-```bash
-make SDCARD=/dev/sdX install
-```
+   ```bash
+   make SDCARD=/dev/sdX install
+   ```
 
 5. The SD card can be inserted into the Raspberry Pi, then the power can be
    connected to turn on the device. It should boot into the Phosh lockscreen.

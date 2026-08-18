@@ -42,6 +42,12 @@ TODO
 Nix can be installed on top of any linux distro.
 https://nixos.org/download/#nix-install-linux
 
+## Running Inside a Virtual Machine
+
+If you can't access the SD card from inside a VM, you may want to make an image
+inside the VM then transfer it to your native OS and write it to the SD card
+from there.
+
 # Usage
 
 1. Clone this git repo

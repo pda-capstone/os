@@ -6,9 +6,16 @@ pkgdesc="Demo app for Pocket Distro Alpha"
 url="https://github.com/pda-capstone"
 arch="aarch64 x86_64"
 license="GPL-3.0-or-later"
-depends="py3-gobject3 gtk4.0 py3-cairo"
+depends="gtk4.0 libadwaita py3-gobject3 py3-cairo py3-psutil"
 depends_dev=""
-makedepends="py3-gpep517 py3-setuptools py3-wheel python3-dev libadwaita"
+makedepends="
+	gtk4.0-dev
+	libadwaita-dev
+	python3-dev
+	py3-gpep517
+	py3-setuptools
+	py3-wheel
+	"
 # checkdepends="py3-pytest"
 source="$pkgname-$pkgver.tar.gz::https://github.com/pda-capstone/ui/archive/refs/tags/v$pkgver.tar.gz"
 builddir="$srcdir"/ui-$pkgver/$pkgname
@@ -41,5 +48,5 @@ package() {
 }
 
 sha512sums="
-c4d9b673b3fc9a5c43c9227c30e66cfa237f1c16695f9ef277427d1982736057e3d424e2c773cbad4e2d89a66d49adb68c9bec61fac4b7a47006e3bda249676a  pda-demo-app-0.1.0.tar.gz
+27812fa7b19fa91766e93bd6bbbf6ce8637a7c8849cbcfd35fcd59e7f15cafc65ec854b7a8e542fea583f8ad5450b0a2b0f3c89c58c89c89ef7870b01abf31b7  pda-demo-app-0.1.0.tar.gz
 "

@@ -48,5 +48,5 @@ package() {
 }
 
 sha512sums="
-27812fa7b19fa91766e93bd6bbbf6ce8637a7c8849cbcfd35fcd59e7f15cafc65ec854b7a8e542fea583f8ad5450b0a2b0f3c89c58c89c89ef7870b01abf31b7  pda-demo-app-0.1.0.tar.gz
+4eabbee8cf3ef7230099c2bb003cfa3bee01424b3458fe5fd43ecf329e5a662130112ff8bbbc174ea1a3b4cefa62e0f10b341b38eb3589fce0676140daabd38c  pda-demo-app-0.1.0.tar.gz
 "

@@ -168,5 +168,5 @@ clean:
 	-pmbootstrap zap --all
 	-sudo rm -rf $(WORK_PATH)
 	-rm -f $(CFG_FILE)
-	-rm -r output/
+	-rm -rf output/
 	@echo '[CLEAN DONE]'

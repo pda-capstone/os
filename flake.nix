@@ -23,6 +23,7 @@
             pkgs.pmbootstrap
             pkgs.bash
             pkgs.gnumake
+            pkgs.git
           ];
           shellHook = ''
             echo "In dev shell!"

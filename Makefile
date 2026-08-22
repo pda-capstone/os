@@ -1,5 +1,10 @@
-WORK_PATH := ${HOME}/.local/var/pmbootstrap
+PMBOOTSTRAP_VERSION = 3.11.1
+INPUT_FILE = pmbootstrap_v$(PMBOOTSTRAP_VERSION)_input.generated
+
+WORK_PATH = ${HOME}/.local/var/pmbootstrap
 PMAPORTS_PATH := $(WORK_PATH)/cache_git/pmaports
+
+CFG_FILE = ${HOME}/.config/pmbootstrap_v3.cfg
 
 DEVICE := pda-tft
 DEVICE_PATH := device/downstream/device-$(DEVICE)
@@ -19,24 +24,26 @@ DAEMON_PATH := main/pda-hotswapd
 DAEMON_PATH_LOCAL := pmaports/$(DAEMON_PATH)
 DAEMON_PATH_GIT := $(PMAPORTS_PATH)/$(DAEMON_PATH)
 
-CFG_DIR := ${HOME}/.config
-CFG_FILE := $(CFG_DIR)/pmbootstrap_v3.cfg
-VERSION_FILE := $(WORK_PATH)/version
+BACKGROUNDS_PATH := main/pda-backgrounds
+BACKGROUNDS_PATH_LOCAL := pmaports/$(BACKGROUNDS_PATH)
+BACKGROUNDS_PATH_GIT := $(PMAPORTS_PATH)/$(BACKGROUNDS_PATH)
 
-EXTRA_PACKAGES := vim,pda-demo-app,pda-hotswapd,pda-hotswapd-doc,mandoc
+# Configuration
+BOOT_SIZE = 2048
+EXTRA_PACKAGES = vim,git,pda-demo-app,pda-hotswapd,pda-hotswapd-doc,mandoc,pda-backgrounds
+USER_INTERFACE = phosh
 
-PMAPORTS_URL := https://gitlab.postmarketos.org/postmarketOS/pmaports.git
-PMAPORTS_COMMIT := b2ec188d30f6408585d44e7f6473142e4c052a18
+PMAPORTS_URL = https://gitlab.postmarketos.org/postmarketOS/pmaports.git
+PMAPORTS_COMMIT = b2ec188d30f6408585d44e7f6473142e4c052a18
 
-PMBOOTSTRAP_VERSION := 3.10.3
+OUTPUT_DIR = output
 
+.PHONY: all vars config init copy kernel install image clean
 
-.PHONY: all vars setup copy kernel install clean
-
-all: vars setup copy
+all: vars copy
 	@echo '[DONE WITH ALL]'
 
-# echo our variables to verify.
+# echo our variables to easily verify.
 vars:
 	@echo
 	@echo
@@ -49,97 +56,61 @@ vars:
 	@echo 'DEVICE_PATH_LOCAL' $(DEVICE_PATH_LOCAL)
 	@echo 'DEVICE_PATH_GIT' $(DEVICE_PATH_GIT)
 	@echo
-	@echo 'KERNEL_PATH' $(KERNEL_PATH)
-	@echo 'KERNEL_PATH_LOCAL' $(KERNEL_PATH_LOCAL)
-	@echo 'KERNEL_PATH_GIT' $(KERNEL_PATH_GIT)
-	@echo
-	@echo 'DEMO_APP_PATH' $(DEMO_APP_PATH)
-	@echo 'DEMO_APP_PATH_LOCAL' $(DEMO_APP_PATH_LOCAL)
-	@echo 'DEMO_APP_PATH_GIT' $(DEMO_APP_PATH_GIT)
-	@echo
-	@echo 'DAEMON_PATH' $(DAEMON_PATH)
-	@echo 'DAEMON_PATH_LOCAL' $(DAEMON_PATH_LOCAL)
-	@echo 'DAEMON_PATH_GIT' $(DAEMON_PATH_GIT)
-	@echo
-	@echo 'CFG_DIR' $(CFG_DIR)
-	@echo 'CFG_FILE' $(CFG_FILE)
-	@echo 'VERSION_FILE' $(VERSION_FILE)
-	@echo
 	@echo 'EXTRA_PACKAGES' $(EXTRA_PACKAGES)
-	@echo
-	@echo 'PMAPORTS_URL' $(PMAPORTS_URL)
 	@echo '[DONE WITH VARS]'
 
-# Set up pmbootstrap files and configuration for our device.
-# This is an alternative to `pmbootstrap init --shallow-initial-clone` that
-# would require a lot of manual interaction just to init, which we override
-# anyways.
-setup:
-	@echo
-	@echo
-	@echo '[Creating Config File]'
-	mkdir -p $(CFG_DIR)
-	rm -f $(CFG_FILE)
-	touch $(CFG_FILE)
-	echo '[pmbootstrap]' >> $(CFG_FILE)
-	echo 'aports = $(PMAPORTS_PATH)' >> $(CFG_FILE)
-	echo 'boot_size = 2048' >> $(CFG_FILE)
-	echo 'device = pda-tft' >> $(CFG_FILE)
-	echo 'extra_packages = $(EXTRA_PACKAGES)' >> $(CFG_FILE)
-	echo 'hostname = pda-tft' >> $(CFG_FILE)
-	echo 'is_default_channel = False' >> $(CFG_FILE)
-	echo 'systemd = always' >> $(CFG_FILE)
-	echo 'ui = phosh' >> $(CFG_FILE)
-	echo 'work = $(WORK_PATH)' >> $(CFG_FILE)
-	echo '' >> $(CFG_FILE)
-	echo '[providers]' >> $(CFG_FILE)
-	echo '' >> $(CFG_FILE)
-	echo '[mirrors]' >> $(CFG_FILE)
-	echo '' >> $(CFG_FILE)
-	@echo
-	@echo
-	@echo '[Creating Version File]'
-	mkdir -p $(WORK_PATH)
-	rm -f $(VERSION_FILE)
-	touch $(VERSION_FILE)
-	echo '8' > $(VERSION_FILE)
-	@echo
-	@echo
-	@echo '[Creating Pmaports Cache]'
-	rm -rf $(PMAPORTS_PATH)
-	mkdir -p $(WORK_PATH)/cache_git
-	git clone $(PMAPORTS_URL) $(PMAPORTS_PATH) --depth=1
-	@echo
-	@echo
-	@echo '[Setting Config]'
-	pmbootstrap config aports $(PMAPORTS_PATH)
-	pmbootstrap config auto_zap_misconfigured_chroots no
-	pmbootstrap config boot_size 2048
-	pmbootstrap config build_default_device_arch False
-	pmbootstrap config build_pkgs_on_install True
-	pmbootstrap config ccache_size 10G
+# We automate calling `pmbootstrap init`, giving us a single command setup with
+# no interaction required.
+init: config
+	pmbootstrap init --shallow-initial-clone < $(INPUT_FILE)
+	pmbootstrap config auto_zap_misconfigured_chroots yes
 	pmbootstrap config device $(DEVICE)
-	pmbootstrap config extra_packages $(EXTRA_PACKAGES)
-	pmbootstrap config extra_space 0
-	pmbootstrap config hostname $(DEVICE)
-	pmbootstrap config is_default_channel False
-	pmbootstrap config kernel stable
-	pmbootstrap config locale en_US.UTF-8
-	pmbootstrap config qemu_redir_stdio False
-	pmbootstrap config ssh_key_glob ~/.ssh/*.pub
-	pmbootstrap config ssh_keys True
-	pmbootstrap config sudo_timer False
-	pmbootstrap config systemd always
-	pmbootstrap config timezone GMT
-	pmbootstrap config ui phosh
-	pmbootstrap config ui_extras False
-	pmbootstrap config user user
-	pmbootstrap config work $(WORK_PATH)
-	@echo '[DONE WITH SETUP]'
+	# pmbootstrap config timezone 'America/Los_Angeles'
+	@echo '[DONE WITH INIT]'
+
+# We create a file that can be used as inputs to the interactive
+# `pmbootstrap init`. This will be highly dependent on the interactive
+# interface of `pmbootstrap init`, so we want to make sure versions match.
+# Consider running `make config` then checking the contents of the file whilst
+# manually running `pmbootstrap init` to see if the inputs are the same. This
+# configuration is just for initialization, not what will be installed. We can
+# change it later.
+config:
+ifneq ($(PMBOOTSTRAP_VERSION), $(shell pmbootstrap --version))
+	$(error pmbootstrap version must match configuration version $(PMBOOTSTRAP_VERSION))
+endif
+	rm -f $(INPUT_FILE)
+	touch $(INPUT_FILE)
+	echo $(WORK_PATH) >> $(INPUT_FILE)
+	echo $(PMAPORTS_PATH) >> $(INPUT_FILE)
+	echo edge >> $(INPUT_FILE)
+	echo raspberry >> $(INPUT_FILE)
+	echo pi5 >> $(INPUT_FILE)
+	echo y >> $(INPUT_FILE)
+	echo user >> $(INPUT_FILE)
+	echo pulseaudio >> $(INPUT_FILE)
+	echo wpa_supplicant >> $(INPUT_FILE)
+	echo developer >> $(INPUT_FILE)
+	echo $(USER_INTERFACE) >> $(INPUT_FILE)
+	echo systemd >> $(INPUT_FILE)
+	echo y >> $(INPUT_FILE)
+	echo 0 >> $(INPUT_FILE)
+	echo $(BOOT_SIZE) >> $(INPUT_FILE)
+	echo '' >> $(INPUT_FILE)
+	echo '' >> $(INPUT_FILE)
+	echo n >> $(INPUT_FILE)
+	echo n >> $(INPUT_FILE)
+	echo $(EXTRA_PACKAGES) >> $(INPUT_FILE)
+	echo '' >> $(INPUT_FILE)
+	echo $(DEVICE) >> $(INPUT_FILE)
+	echo y >> $(INPUT_FILE)
+	echo y >> $(INPUT_FILE)
+	echo '' >> $(INPUT_FILE)
+	echo '' >> $(INPUT_FILE)
 
 # Our custom files are copied into the pmaports git cache to allow
 # pmbootstrap to see them.
-copy:
+copy: init
 	@echo
 	@echo
 	@echo '[Copying Packages]'
@@ -152,8 +123,14 @@ copy:
 	rm -rf $(DAEMON_PATH_GIT)
 	cp -r $(DAEMON_PATH_LOCAL) $(DAEMON_PATH_GIT)
 	@echo
+	rm -rf $(BACKGROUNDS_PATH_GIT)
+	cp -r $(BACKGROUNDS_PATH_LOCAL) $(BACKGROUNDS_PATH_GIT)
+	@echo
 	rm -rf $(KERNEL_PATH_GIT)
 	cp -r $(KERNEL_PATH_LOCAL) $(KERNEL_PATH_GIT)
+	@echo
+	git -C $(PMAPORTS_PATH) add --all
+	-git -C $(PMAPORTS_PATH) commit -m 'pda auto commit'
 	@echo '[DONE WITH COPY]'
 
 # Command to rebuild kernel with the 
@@ -180,7 +157,16 @@ endif
 	pmbootstrap install --sdcard=$(SDCARD)
 	@echo '[DONE WITH INSTALL]'
 
+image:
+	mkdir $(OUTPUT_DIR)
+	pmbootstrap config ssh_keys False
+	pmbootstrap install
+	pmbootstrap export $(OUTPUT_DIR)
+	@echo '[DONE WITH IMAGE CREATION]'
+
 clean:
-	-pmbootstrap zap
+	-pmbootstrap zap --all
 	-sudo rm -rf $(WORK_PATH)
 	-rm -f $(CFG_FILE)
+	-rm -r output/
+	@echo '[CLEAN DONE]'

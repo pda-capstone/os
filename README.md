@@ -8,6 +8,10 @@ A two command install can put the operating system on an SD card. The default
 install includes the PDA demo app and hotswap daemon. A dsi display is also
 enabled.
 
+![Screenshot](./assets/lock_and_home.png)
+
+*Screenshot of the lock and home screens*
+
 # Prerequisites
 
 * Micro SD card
@@ -16,6 +20,14 @@ enabled.
 
 The recommended way is to start a linux virtual machine that can read and
 write to the Micro SD card.
+
+### Hardware Configuration
+
+At a minimum, a Raspberry Pi 5 is needed. The current configuration uses a DSI
+display, specifically the BigTreeTech TFT50 v2.0. The display is not needed
+if other peripherals that will work out of the box are used, like an HDMI
+display or USB keyboard. Other hardware support may require modifying the
+Pi's `usercfg.txt`.
 
 ## Windows
 
@@ -30,34 +42,60 @@ TODO
 Nix can be installed on top of any linux distro.
 https://nixos.org/download/#nix-install-linux
 
+## Running Inside a Virtual Machine
+
+If you can't access the SD card from inside a VM, you may want to make an image
+inside the VM then transfer it to your native OS and write it to the SD card
+from there.
+
 # Usage
 
 1. Clone this git repo
 
-```bash
-git clone https://github.com/pda-capstone/os.git
-cd os
-```
+   ```bash
+   git clone https://github.com/pda-capstone/os.git
+   cd os
+   ```
 
 2. Perform setup and configuration
 
-```bash
-nix develop
-make clean
-make
-pmbootstrap init # Use to configure beyond the default
-```
+   ```bash
+   nix develop --experimental-features 'nix-command flakes'
+   make clean
+   make
+   pmbootstrap init # Use to configure beyond the default
+   ```
 
 3. Insert Micro SD card and identify it. It will probably be sdb.
 
-```bash
-lsblk
-```
+   ```bash
+   lsblk
+   ```
+
+> [!CAUTION]
+> Ensure you have selected the correct device!
 
 4. Install onto the card. Replace X with the letter identified by `lsblk`
 
+   ```bash
+   make SDCARD=/dev/sdX install
+   ```
+
+5. The SD card can be inserted into the Raspberry Pi, then the power can be
+   connected to turn on the device. It should boot into the Phosh lockscreen.
+
+# Using an Image
+
+Create an image using `make image`. The resulting image will be in the `output`
+directory as 'name-of-device.img'.
+
+Use a command like this to flash the image to the SD card.
+
+> [!CAUTION]
+> Ensure you have selected the correct device!
+
 ```bash
-make SDCARD=/dev/sdX install
+sudo dd if=output/pda-tft.img of=/dev/sdX status=progress bs=16M
 ```
 
 # Post Install
@@ -80,6 +118,10 @@ make SDCARD=/dev/sdX install
 
 * Run `make clean` then `make` to delete existing files and reinitialize
 * Consult the PostmarketOS wiki: https://wiki.postmarketos.org/wiki/Pmbootstrap
+* Plug in a monitor to the device though Micro HDMI if the display isn't
+  working.
+* Ensure you are not getting low voltage warnings from your power source.
+  The device can work under low voltage, but it can cause stability issues.
 
 # How This Works
 
@@ -103,26 +145,43 @@ APKBUILD format and retrieve source code from GitHub releases
 A `makefile` wraps all of these commands and handles setup, giving us a two
 command setup and install onto an SD card.
 
-# Maintenance
+# Maintenance & Future Development
 
-## Dependencies
+## Updating Dependencies
 
-pmaports and pmbootstrap should both be updated to remain compatible.
-pmbootstrap can be updated with `nix flake update`.
-Use `make` to update the pmaports cache locally, no need to
+### Pmbootstrap
+
+`pmaports` and `pmbootstrap` should both be updated to remain compatible.
+You will probably get an error from `pmbootstrap` if it is out of date.
+`pmbootstrap` can be updated with `nix flake update`. When `pmbootstrap` is
+updated, check `INPUT_FILE` in the `Makefile` to see if it needs
+to be updated. Use `make` to update the pmaports cache locally, no need to
 change anything else in this repo because the most recent will be cloned on
 setup. We could pin to a commit, but that probably isn't necessary.
 
-If new custom packages are added, the Makefile should be updated.
+### Custom Packages
+
+If new custom packages are added, the `Makefile` should be updated to copy these
+packages into the local pmaports directory and add them to custom packages
+in the `pmbootstrap` config (specified in the `Makefile`).
 If the existing releases for packages are updated, like a new GitHub release of
-the demo app, then the checksum in the APKBUILD file would need to be updated
+the demo app, then the checksum in the `APKBUILD` file would need to be updated
 (don't forget to use `make copy` to update pmaports).
 
 ## New Hardware
 
 When new hardware support is needed, a new device package will need to be
-created, or an existing package must be updated. The usercfg.txt may need to be
-changed to allow new hardware to work.
+created, or an existing package must be updated. A new device, for example a
+different platform than the Raspberry Pi 5, would require a new device package.
+An existing package could be copied over to assist in creation.
+A new device should also be created for different hardware configurations,
+for example a different screen, sensors, etc. Ideally, a final device with
+fixed hardware would be created, along with a specific device package that
+supports it.
+Consult [Porting to a new device](https://wiki.postmarketos.org/wiki/Porting_to_a_new_device)
+for more information.
+If a device is changed, then the usercfg.txt may simply need to be updated
+to allow new hardware to work, for example a different display.
 
 # Useful Links
 
@@ -140,6 +199,8 @@ https://wiki.alpinelinux.org/wiki/Raspberry_Pi
 https://trac.gateworks.com/wiki/linux/OTG#USBDeviceMode
 https://pip-assets.raspberrypi.com/categories/685-app-notes-guides-whitepapers/documents/RP-009276-WP-1-Using%20OTG%20mode%20on%20Raspberry%20Pi%20SBCs.pdf
 https://github.com/macmpi/xg_multi
+
+https://gitlab.postmarketos.org/postmarketOS/pmaports/-/tree/main/main/postmarketos-artwork?ref_type=heads
 
 # License
 

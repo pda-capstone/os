@@ -20,7 +20,7 @@ build() {
 }
 
 # check() {
-	# make check
+	# make test
 # }
 
 package() {
@@ -28,5 +28,5 @@ package() {
 }
 
 sha512sums="
-38a0adea9e9e856be6c326f5ebaadcc0bfaa79bf751de9e6852a9e5c0a77323d93050cdebeefef94e395b011ce52cad7de47dd55080a57872810d529fed01d42  pda-hotswapd-0.1.0.tar.gz
+45abf65f6b7fce24e4bb1b98be189317bf2b457cb7da49b1b6aaef9346a35487dab9e5fc5e79aee6e56febdf813f5575b265a787d9f6be23cdfa2bdacb9f72bc  pda-hotswapd-0.1.0.tar.gz
 "

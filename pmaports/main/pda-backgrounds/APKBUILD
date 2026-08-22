@@ -1,0 +1,32 @@
+# Maintainer: Tanner Weber <tannerw@pdx.edu>
+pkgname=pda-backgrounds
+pkgver=0.1.0
+pkgrel=0
+pkgdesc="Background wallpaper images for Pocket Distro Alpha"
+url="https://github.com/pda-capstone"
+arch="noarch"
+license="GPL-3.0-or-later"
+source="
+	pda-background-d.png
+	pda-background-l.png
+	pda-background.xml
+	20_pda-wallpaper.gschema.override
+	"
+options="!check"
+
+package() {
+	install -Dm644 -t "$pkgdir"/usr/share/backgrounds/pda/ \
+		"$srcdir"/pda-background-d.png \
+		"$srcdir"/pda-background-l.png
+	install -Dm644 -t "$pkgdir"/usr/share/gnome-background-properties/ \
+		"$srcdir"/pda-background.xml
+	install -Dm644 -t "$pkgdir"/usr/share/glib-2.0/schemas/ \
+		"$srcdir"/20_pda-wallpaper.gschema.override
+}
+
+sha512sums="
+04dcd17e9e68a4e9f34ec6ce3cb05a62a38f20ff958058d27a5bda36cfc2df13a11e0a36d13937a26c02272ccf935dc048b6fcccef07eaac64b35d4eba5bd212  pda-background-d.png
+37e8de2c95b4259fcc68938c4b088c50f24cf8c97cecec6763b7a08645dc67ec1325194e95f7ad36f68c704d5eebe4e5a1e93981abeaac4dff6d88cbb6c012b2  pda-background-l.png
+7c797b43ef478b0ddac040845f3b3cafca2d5569713192730551851065629b6db2d999fa715f79d93d3de81477dd26b49f2af6279d31cafb8094e839aa2c89ec  pda-background.xml
+26be2a2ae8a33d338d6972ca6b5d459e610da6dde4e4d5bdb94753a89c7ca72f1683001b65e2c923e904ae6c34e052ae57ee4134825550c8be5e5e375fa775dc  20_pda-wallpaper.gschema.override
+"

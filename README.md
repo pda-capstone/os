@@ -48,13 +48,25 @@ make
 pmbootstrap init # Use to configure beyond the default
 ```
 
-3. Insert Micro SD card and identify it. It will probably be sdb.
+3. ***OPTIONAL*** CONFIGURE KERNEL SUBSYSTEMS
+a. Add Subsystems to be disabled in /config/disabled-subsystem.fragment using one of the following conventions
+# CONFIG_<SPECIFIER> is not set
+# CONFIG_<SPECIFIER>=n
+
+b. Use the make commands to inject subsystem disables into the rpi recipe and then recompile the hardened kernel
+```bash
+make clean
+make setup
+make kernel
+```
+
+4. Insert Micro SD card and identify it. It will probably be sdb.
 
 ```bash
 lsblk
 ```
 
-4. Install onto the card. Replace X with the letter identified by `lsblk`
+5. Install onto the card. Replace X with the letter identified by `lsblk`
 
 ```bash
 make SDCARD=/dev/sdX install

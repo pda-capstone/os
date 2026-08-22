@@ -117,11 +117,15 @@ sudo dd if=output/pda-tft.img of=/dev/sdX status=progress bs=16M
 # Troubleshooting
 
 * Run `make clean` then `make` to delete existing files and reinitialize
+* If you get an error when installing, run the command again.
 * Consult the PostmarketOS wiki: https://wiki.postmarketos.org/wiki/Pmbootstrap
 * Plug in a monitor to the device though Micro HDMI if the display isn't
   working.
 * Ensure you are not getting low voltage warnings from your power source.
   The device can work under low voltage, but it can cause stability issues.
+* If internet is not working, you may need to set the time to be correct using
+  something like `timedatectl set-timezone "America/Los_Angeles"` then
+  `sudo date -s "2026-08-24 13:15:00"` (Use your current date and time).
 
 # How This Works
 

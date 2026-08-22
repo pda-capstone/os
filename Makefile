@@ -128,6 +128,9 @@ copy: init
 	@echo
 	rm -rf $(KERNEL_PATH_GIT)
 	cp -r $(KERNEL_PATH_LOCAL) $(KERNEL_PATH_GIT)
+	@echo
+	git -C $(PMAPORTS_PATH) add --all
+	-git -C $(PMAPORTS_PATH) commit -m 'pda auto commit'
 	@echo '[DONE WITH COPY]'
 
 # Command to rebuild kernel with the 

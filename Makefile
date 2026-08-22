@@ -159,6 +159,7 @@ endif
 
 image:
 	mkdir $(OUTPUT_DIR)
+	pmbootstrap config ssh_keys = False
 	pmbootstrap install
 	pmbootstrap export $(OUTPUT_DIR)
 	@echo '[DONE WITH IMAGE CREATION]'

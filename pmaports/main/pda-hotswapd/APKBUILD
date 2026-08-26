@@ -28,5 +28,5 @@ package() {
 }
 
 sha512sums="
-45abf65f6b7fce24e4bb1b98be189317bf2b457cb7da49b1b6aaef9346a35487dab9e5fc5e79aee6e56febdf813f5575b265a787d9f6be23cdfa2bdacb9f72bc  pda-hotswapd-0.1.0.tar.gz
+1eef52f23bba37e12c4c228c9244731f659bb8c16021c9a6932ad3e88dc18df8c91a490e2751c3ef2221563373fe2ed7db4203b8040df4d9317e0a7360edf882  pda-hotswapd-0.1.0.tar.gz
 "

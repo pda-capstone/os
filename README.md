@@ -57,11 +57,14 @@ from there.
    cd os
    ```
 
+> [!NOTE]
+> Comment out `cp -r $(KERNEL_PATH_LOCAL) $(KERNEL_PATH_GIT)` in the Makefile
+> to skip the kernel build and use Alpine Linux's cached one.
+
 2. Perform setup and configuration
 
    ```bash
    nix develop --experimental-features 'nix-command flakes'
-   make clean
    make
    pmbootstrap init # Use to configure beyond the default
    ```

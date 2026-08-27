@@ -158,9 +158,10 @@ endif
 	@echo '[DONE WITH INSTALL]'
 
 image:
-	mkdir $(OUTPUT_DIR)
 	pmbootstrap config ssh_keys False
 	pmbootstrap install
+	rm -rf $(OUTPUT_DIR)
+	mkdir $(OUTPUT_DIR)
 	pmbootstrap export $(OUTPUT_DIR)
 	@echo '[DONE WITH IMAGE CREATION]'
 
@@ -169,5 +170,5 @@ clean:
 	-pmbootstrap zap --all
 	-sudo rm -rf $(WORK_PATH)
 	-rm -f $(CFG_FILE)
-	-rm -rf output/
+	-rm -rf $(OUTPUT_DIR)
 	@echo '[CLEAN DONE]'
